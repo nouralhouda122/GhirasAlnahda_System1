@@ -111,7 +111,6 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
     Route::post('campaignAttendances/{id}', [AttendanceController::class, 'campaignAttendances']);
     Route::get('volunteerAttendances', [AttendanceController::class, 'volunteerAttendances']);
     //قسم المتطوعين
-    Route::post('showgoal/{id}', [\App\Http\Controllers\GoalController::class, 'show']);
 
     Route::get('getVoulnteer', [UserController::class, 'getVoulnteer']);
     Route::post('showVolunteer/{id}', [UserController::class, 'showVolunteer']);
@@ -119,13 +118,10 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
     Route::get('showAllApprovalRequest', [ApprovalRequestController::class, 'showAll']);
     Route::post('updateStatusApprovalRequest/{id}', [ApprovalRequestController::class, 'updateStatus']);
     Route::post('indexDetailApprovalRequest/{id}', [ApprovalRequestController::class, 'indexDetail']);
-////////////////////////////kpis
-    Route::post('analyze', [KPIController::class, 'analyze']);
-
-    Route::post('generate-indicators', [
-        IndicatorGeneratorController::class,
-        'generate'
-    ]);
+///////////////////////////////////////////////////////////
+/// kpi
+    Route::post('indexAllGoals/{id}', [\App\Http\Controllers\MonitoringGoalController::class, 'index']);
+    Route::post('showIndicatorsForGoals/{id}', [\App\Http\Controllers\MonitoringGoalController::class, 'show']);
 
 
 
@@ -138,8 +134,7 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
 
 
 
-    Route::get('result/{id}', [KPIController::class, 'result']);
-
+/////////////////////////////////////////////////////////////
     // --- راوتات طلبات التطوع ---
     // 1. تقديم طلب جديد (للمستخدم)
     Route::post('volunteerjoin', [VolunteerRequestController::class, 'store']);

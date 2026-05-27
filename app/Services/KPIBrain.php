@@ -4,9 +4,7 @@ namespace App\Services;
 
 class KPIBrain
 {
-    // =====================================================
-    // 🧠 MAIN ENTRY
-    // =====================================================
+
     public function analyze(string $goal): array
     {
         $text = $this->normalize($goal);

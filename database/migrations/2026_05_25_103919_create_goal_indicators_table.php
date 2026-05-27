@@ -7,31 +7,75 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Run migrations.
      */
     public function up(): void
     {
-        Schema::create('goal_indicator', function (Blueprint $table) {
+        Schema::create('goal_indicators', function (Blueprint $table) {
 
             $table->id();
 
+            /*
+            |--------------------------------------------------------------------------
+            | Goal
+            |--------------------------------------------------------------------------
+            */
+
             $table->foreignId('campaign_kpi_id')
-                ->constrained()
+                ->constrained('campaign_kpis')
                 ->cascadeOnDelete();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Indicator
+            |--------------------------------------------------------------------------
+            */
 
             $table->foreignId('indicator_id')
-                ->constrained()
+                ->constrained('indicators')
                 ->cascadeOnDelete();
 
-            $table->float('score')->nullable();
+            /*
+            |--------------------------------------------------------------------------
+            | AI Matching
+            |--------------------------------------------------------------------------
+            */
+
+            $table->decimal('score', 5, 2)
+                ->default(0);
+
+            $table->integer('ranking')
+                ->nullable();
+
+            $table->text('match_reason')
+                ->nullable();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Human Approval
+            |--------------------------------------------------------------------------
+            */
+
+            $table->enum('approval_status', [
+                'pending',
+                'approved',
+                'rejected'
+            ])->default('pending');
+
+            $table->foreignId('approved_by_monitor')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
+            $table->timestamp('approved_at')
+                ->nullable();
 
             $table->timestamps();
-
-            $table->unique(['campaign_kpi_id', 'indicator_id']);
-        });            }
+        });
+    }
 
     /**
-     * Reverse the migrations.
+     * Reverse migrations.
      */
     public function down(): void
     {
