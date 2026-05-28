@@ -27,8 +27,12 @@ return new class extends Migration
 
             $table->timestamps();
 
-            $table->unique(['indicator_id', 'survey_question_id', 'phase']);
-        });                   }
+            // ✅ FIX
+            $table->unique(
+                ['indicator_id', 'survey_question_id', 'phase'],
+                'iqp_unique'
+            );
+        });                          }
 
     /**
      * Reverse the migrations.

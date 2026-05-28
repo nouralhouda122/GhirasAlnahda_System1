@@ -9,5 +9,16 @@ class goalIndicator extends Model
 {
     use HasFactory;
     protected $guarded=[];
-
+    public function indicator()
+    {
+        return $this->belongsTo(
+            Indicator::class
+        );
+    }public function goal()
+{
+    return $this->belongsTo(
+Campaign_kpi::class,
+        'campaign_kpi_id'
+    );
+}
 }
