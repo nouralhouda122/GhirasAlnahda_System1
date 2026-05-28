@@ -2,7 +2,7 @@
 
 
 namespace App\Http\Controllers;
-
+use App\Http\Requests\ScanQrAttendanceRequest;
 
 use App\Helpers\ResponseHelper;
 use App\Http\Requests\AttendanceRequest;
@@ -57,6 +57,32 @@ class AttendanceController
         }
     }
 
+// ////////راية 
+//     public function scanQr(ScanQrAttendanceRequest $request)
+//     {
+//         $data = $this->attendanceService->scanQr($request);
+//         if ($data['code'] === 200) {
+//             return ResponseHelper::Success($data['user'], $data['message'], $data['code']);
+//         } else {
+//             return ResponseHelper::Error($data['user'], $data['message'], $data['code']);
+//         }
+        
+//     } 
+public function scanVolunteerQr(ScanQrAttendanceRequest $request)
+{
+    // // التأمين الأمني بناءً على الـ Seeder الخاص بكِ لـقائد الفريق
+    // if (!auth()->user()->hasPermissionTo('scan.volunteer.qr')) {
+    //     return ResponseHelper::Error(null, 'Unauthorized! Only Team Leaders can scan QR codes.', 403);
+    // }
 
+    $data = $this->attendanceService->scanVolunteerQr($request);
+
+    if ($data['code'] === 200) {
+        return ResponseHelper::Success($data['data'], $data['message'], $data['code']);
+    } else {
+        return ResponseHelper::Error($data['data'], $data['message'], $data['code']);
+    }
+}
 
 }
+

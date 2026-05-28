@@ -110,6 +110,7 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
     Route::post('leaderCheckOut/{id}', [AttendanceController::class, 'leaderCheckOut']);
     Route::post('campaignAttendances/{id}', [AttendanceController::class, 'campaignAttendances']);
     Route::get('volunteerAttendances', [AttendanceController::class, 'volunteerAttendances']);
+    Route::post('attendance/scan-qr', [AttendanceController::class, 'scanVolunteerQr']);
     //قسم المتطوعين
     Route::post('showgoal/{id}', [\App\Http\Controllers\GoalController::class, 'show']);
 
