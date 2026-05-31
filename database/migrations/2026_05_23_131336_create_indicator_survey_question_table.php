@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('indicator_survey_question', function (Blueprint $table) {
@@ -18,27 +15,30 @@ return new class extends Migration
             $table->foreignId('indicator_id')
                 ->constrained()
                 ->cascadeOnDelete();
-
-            $table->foreignId('survey_question_id')
+            $table->foreignId('question_id')
                 ->constrained()
                 ->cascadeOnDelete();
-
-            $table->enum('phase', ['before', 'during', 'after']);
-
+            $table->enum('phase', [
+                'before',
+                'during',
+                'after'
+            ]);
             $table->timestamps();
-
-            // ✅ FIX
             $table->unique(
-                ['indicator_id', 'survey_question_id', 'phase'],
+                [
+                    'indicator_id',
+                    'question_id',
+                    'phase'
+                ],
                 'iqp_unique'
             );
-        });                          }
+        });
+    }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('indicator_survey_question');
+        Schema::dropIfExists(
+            'indicator_survey_question'
+        );
     }
 };

@@ -28,14 +28,11 @@ class AttendanceRepository
     }
 
 
-    /**
-     * البحث عن جلسة حضور مفتوحة للمتطوع داخل الحملة
-     */
     public function findActiveVolunteerSession($volunteerId, $campaignId)
     {
         return Attendance::where('volunteer_id', $volunteerId)
             ->where('campaign_id', $campaignId)
-            ->whereNull('check_out_time') // الحقل من ملف زميلتكِ
+            ->whereNull('check_out_time')
             ->first();
     }
 }

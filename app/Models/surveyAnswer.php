@@ -2,30 +2,49 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class surveyAnswer extends Model
+class SurveyAnswer extends Model
 {
-    protected $fillable = [
-        'survey_id',
-        'survey_question_id',
-        'user_id',
-        'answer'
-    ];
+    use HasFactory;
 
+    protected $guarded = [];
+
+    /*
+    |-----------------------------------------
+    | الاستبيان
+    |-----------------------------------------
+    */
     public function survey()
     {
-        return $this->belongsTo(Survey::class);
+        return $this->belongsTo(
+            Survey::class
+        );
     }
 
+    /*
+    |-----------------------------------------
+    | السؤال
+    |-----------------------------------------
+    */
     public function question()
     {
-        return $this->belongsTo(SurveyQuestion::class, 'survey_question_id');
+        return $this->belongsTo(
+            SurveyQuestion::class,
+            'survey_question_id'
+        );
     }
 
+    /*
+    |-----------------------------------------
+    | المستخدم
+    |-----------------------------------------
+    */
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(
+            User::class
+        );
     }
 }

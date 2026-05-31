@@ -13,18 +13,28 @@ class SurveySeeder extends Seeder
 
             [
                 'id' => 1,
-                'name' => 'Pre Campaign Survey',
-                'type' => 'pre_campaign'
+                'title' => 'Before Campaign Survey',
+                'stage' => 'before',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
+
             [
                 'id' => 2,
-                'name' => 'During Campaign Survey',
-                'type' => 'during_campaign'
+                'title' => 'During Campaign Survey',
+                'stage' => 'during',
+
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
+
             [
                 'id' => 3,
-                'name' => 'Post Campaign Survey',
-                'type' => 'after_campaign'
+                'title' => 'After Campaign Survey',
+                'stage' => 'after',
+
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
 
         ]);

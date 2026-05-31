@@ -22,22 +22,24 @@ class BuildCampaignSurveyService
     {
         try {
             $data = DB::transaction(function () use ($campaignId) {
+
                 $beforeSurvey = $this->CampaignSurveyRepository
-                        ->firstOrCreateSurvey($campaignId, 'before', 'Before Campaign Survey');
-                $duringSurvey = $this->CampaignSurveyRepository->firstOrCreateSurvey($campaignId, 'during', 'During Campaign Survey');
-                $afterSurvey = $this->CampaignSurveyRepository->firstOrCreateSurvey($campaignId, 'after', 'After Campaign Survey');
+                    ->firstOrCreateSurvey($campaignId, 'before', 'Before Campaign Survey');
+                $duringSurvey = $this->CampaignSurveyRepository
+                    ->firstOrCreateSurvey($campaignId, 'during', 'During Campaign Survey');
+                $afterSurvey = $this->CampaignSurveyRepository
+                    ->firstOrCreateSurvey($campaignId, 'after', 'After Campaign Survey');
                 $goals = $this->campanig_KpiRepository->getGoalWithIndicatorsAndQuestion($campaignId);
                 foreach ($goals as $goal) {
                     foreach ($goal->goalIndicators as $goalIndicator) {
+
                         if ($goalIndicator->approval_status !== 'approved') {
-                            continue;
-                        }
+                            continue;}
                         $indicator = $goalIndicator->indicator;
                         if (!$indicator) {
                             continue;
                         }
-                        foreach ($indicator->questions as $question
-                        ) {
+                        foreach ($indicator->questions as $question) {
                             $phase = $question->pivot->phase;
                             $survey = match ($phase) {
                                 'before' => $beforeSurvey,
@@ -47,60 +49,40 @@ class BuildCampaignSurveyService
                             };
 
                             if (!$survey) {
-                                continue;}
-                            $exists = $this->surveyQuestionRepository->questionExists(
-                                        $survey->id,
-                                        $question->question_text
-                                    );
-
-                            if ($exists) {
                                 continue;
                             }
 
-                            $this
-                                ->surveyQuestionRepository
+                            $exists = $this->surveyQuestionRepository
+                                ->questionExists($survey->id, $question->id);
+                            if ($exists) {
+                                continue;
+                            }
+                            $this->surveyQuestionRepository
                                 ->createSurveyQuestion(
                                     $survey->id,
-                                    $question
+                                    $question->id
                                 );
                         }
                     }
                 }
-
                 return [
-
-                    'before_survey_id' =>
-                        $beforeSurvey->id,
-
-                    'during_survey_id' =>
-                        $duringSurvey->id,
-
-                    'after_survey_id' =>
-                        $afterSurvey->id,
+                    'before_survey_id' => $beforeSurvey->id,
+                    'during_survey_id' => $duringSurvey->id,
+                    'after_survey_id' => $afterSurvey->id,
                 ];
             });
-
             return [
-
                 'data' => $data,
-
-                'message' =>
-                    'Campaign surveys built successfully',
-
+                'message' => 'Campaign surveys built successfully',
                 'code' => 200,
             ];
 
         } catch (\Exception $e) {
 
             return [
-
                 'data' => $e->getMessage(),
-
-                'message' =>
-                    'Failed to build surveys',
-
+                'message' => 'Failed to build surveys',
                 'code' => 500,
             ];
         }
-    }
-}
+    }}

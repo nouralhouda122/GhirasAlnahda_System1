@@ -3,6 +3,7 @@ namespace App\Services;
 use App\Helpers\StorageHelper;
 use App\Http\Requests\ApprovalRequest;
 use App\Http\Requests\CampaingRequest;
+use App\Http\Requests\SearchCampaignRequest;
 use App\Http\Requests\SearchForPermissionsAndRolesRequest;
 use App\Http\Resources\CampaignDetailsResource;
 use App\Http\Resources\CampaignResource;
@@ -105,10 +106,9 @@ class CampaignService
             'code' => 404
         ];
     }
-    public function SearchCampaign(SearchForPermissionsAndRolesRequest $request)
+    public function SearchCampaign(SearchCampaignRequest $request)
     {
         $campanig = $this->CampaignRepository->Search($request);
-
             return [
                 'user' =>  CampaignResource::collection($campanig),
                 'message' => 'Campaign retrieved successfully',

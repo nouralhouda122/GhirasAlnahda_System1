@@ -123,11 +123,11 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
 /// kpi
     Route::post('indexAllGoals/{id}', [\App\Http\Controllers\MonitoringGoalController::class, 'index']);
     Route::post('showIndicatorsForGoals/{id}', [\App\Http\Controllers\MonitoringGoalController::class, 'show']);
-
-
-
-
-
+    Route::post('updateStatusIndicator/{goal_id}/{indicator_id}', [\App\Http\Controllers\MonitoringGoalController::class, 'updateStatus']);
+    Route::post('showSurveyByStage/{id}', [\App\Http\Controllers\CampaignSurveyController::class, 'show']);
+    Route::post('addQuestionToSurvey/{id}', [\App\Http\Controllers\CampaignSurveyController::class, 'addQuestionToSurvey']);
+    Route::post('updateQuestionToSurvey/{survey_id}/{question_id}', [\App\Http\Controllers\CampaignSurveyController::class, 'updateQuestionToSurvey']);
+    Route::post('DeleteQuestionToSurvey/{survey_id}/{question_id}', [\App\Http\Controllers\CampaignSurveyController::class, 'DeleteQuestionToSurvey']);
 
 
 
@@ -167,11 +167,4 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
 
 
 
-
-
-    Route::get('/kpi-engine', function (KPIEngineService $engine) {
-
-        return response()->json(
-            $engine->analyze("زيادة عدد المتطوعين إلى 5000 خلال 3 أشهر")
-        );
-    });          });
+});

@@ -10,15 +10,10 @@ class SurveyStageRequest extends FormRequest
     {
         return true;
     }
-
     public function rules(): array
     {
         return [
-
-            'stage' => [
-                'required',
-                'in:before,during,after'
-            ],
+            'stage' => ['required','in:before,during,after'],
         ];
     }
 }

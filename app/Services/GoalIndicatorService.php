@@ -1,25 +1,30 @@
 <?php
-
 namespace App\Services;
-
 use App\Http\Resources\GoalIndicatorResource;
 use App\Http\Resources\IndicatorMatchResource;
 use App\Repositories\CampaingRepository;
-use App\Repositories\GoalIndicatorRepository;
-use Illuminate\Http\Resources\Json\JsonResource;
-
+use App\Repositories\Campanig_KpiRepository;
+use App\Repositories\goal_IndicatorRepository;
+use App\Repositories\IndicatorRepository;
 class GoalIndicatorService
 {
     protected $goalIndicatorRepository;
     protected $CampaignRepository;
-
+   protected  $indicatorRepository;
+   protected  $goal_IndicatorRepository;
+    protected  $campaignSurveyService;
     public function __construct(
-        GoalIndicatorRepository $goalIndicatorRepository,
+        Campanig_KpiRepository $goalIndicatorRepository,
         CampaingRepository $CampaignRepository,
+        IndicatorRepository $indicatorRepository,
+        goal_IndicatorRepository $goal_IndicatorRepository,
+        BuildCampaignSurveyService $campaignSurveyService
     ) {
         $this->goalIndicatorRepository = $goalIndicatorRepository;
         $this->CampaignRepository = $CampaignRepository;
-
+                    $this->indicatorRepository = $indicatorRepository;
+        $this->goal_IndicatorRepository = $goal_IndicatorRepository;
+        $this->campaignSurveyService =$campaignSurveyService;
     }
     public function index($id)
     {
@@ -30,8 +35,7 @@ class GoalIndicatorService
                 'message' => 'Campaign not found',
                 'code' => 404];
         }
-        $goals = $this->goalIndicatorRepository
-            ->getAllGoalsWithIndicators($campanig->id);
+        $goals = $this->goalIndicatorRepository->getAllGoalsWithIndicators($campanig->id);
         if ($goals->isEmpty()) {
             return [
                 'data' => [],
@@ -46,14 +50,38 @@ class GoalIndicatorService
             'code' => 200
         ];
     }
-
-
     public function show($goalId)
     {
-        // جلب الهدف مع مؤشراته عبر الـ Eager Loading
         $goal = $this->goalIndicatorRepository
-            ->getGoalWithIndicators($goalId); // تأكد أن الـ repository يجلب علاقة indicators
+            ->findGoalWithIndicators($goalId);
+        if (!$goal) {
+            return [
+                'data' => '',
+                'message' => 'Goal not found',
+                'code' => 404
+            ];
+        }
+        if ($goal->goalIndicators->isEmpty()) {
+            return [
+                'data' => [],
+                'message' => 'No indicators found for this goal',
+                'code' => 200
+            ];
+        }
 
+        return [
+            'data' => IndicatorMatchResource::collection(
+                $goal->goalIndicators
+            ),
+
+            'message' => 'success',
+
+            'code' => 200
+        ];}
+        public function updateStatus($request, $goal_id, $indicator_id)
+    {
+        $goal = $this->goalIndicatorRepository
+            ->findGoalWithIndicators($goal_id);
         if (!$goal) {
             return [
                 'data' => '',
@@ -62,54 +90,59 @@ class GoalIndicatorService
             ];
         }
 
-        if ($goal->indicators->isEmpty()) {
+        $indicator = $this->indicatorRepository
+            ->getById($indicator_id);
+
+        if (!$indicator) {
+
             return [
-                'data' => [],
-                'message' => 'No indicators found for this goal',
-                'code' => 200
+                'data' => '',
+                'message' => 'Indicator not found',
+                'code' => 404
             ];
         }
 
-        // التعديل هنا: نرسل مجموعة المؤشرات (collection) وليس الهدف نفسه
-        return [
-            'data' => IndicatorMatchResource::collection($goal->indicators),
-            'message' => 'success',
-            'code' => 200
-        ];
-    }    /*
-    |--------------------------------------------------------------------------
-    | UPDATE INDICATOR STATUS
-    |--------------------------------------------------------------------------
-    */
-
-    public function updateStatus($request, $id)
-    {
-        $goalIndicator = $this->goalIndicatorRepository
-            ->findGoalIndicator($id);
+        $goalIndicator = $this->goal_IndicatorRepository
+            ->getById($goal_id, $indicator_id);
 
         if (!$goalIndicator) {
 
             return [
                 'data' => '',
-                'message' => 'Goal indicator not found',
+                'message' => 'Goal indicator relation not found',
                 'code' => 404
             ];
         }
+        if ($request->approval_status === 'approved') {
+            $this->campaignSurveyService ->build($goal->campaign_id); }
+        if (
+            $goalIndicator->approval_status ===
+            $request->approval_status
+        ) {
+            return [
+                'data' => '',
+                'message' => 'Indicator already has this status',
+                'code' => 409
+            ];
+        }
+        $this->goal_IndicatorRepository->updateStatus(
+            [
+                'approval_status' => $request->approval_status,
 
-        $updated = $this->goalIndicatorRepository
-            ->updateStatus(
-                $goalIndicator,
-                [
-                    'approval_status' => $request['approval_status'],
-                    'approved_by_monitor' => auth()->id(),
-                    'approved_at' => now(),
-                ]
-            );
+                'approved_by_monitor' => auth()->id(),
+
+                'approved_at' => now(),
+            ],
+            $goalIndicator
+        );
 
         return [
-            'data' => new GoalIndicatorResource($updated),
+            'data' => new IndicatorMatchResource(
+                $goalIndicator->fresh('indicator')
+            ),
+
             'message' => 'Indicator status updated successfully',
+
             'code' => 200
         ];
-    }
-}
+    }}

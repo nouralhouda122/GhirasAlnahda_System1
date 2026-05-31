@@ -1,14 +1,14 @@
 <?php
 namespace App\Repositories;
 
-use Illuminate\Support\Facades\DB;
+
+use App\Models\Indicator;
 
 class IndicatorRepository
 {
-    public function getByDomain(string $domain)
+    public function getById($id )
+
     {
-        return DB::table('indicators')
-            ->where('domain', $domain)
-            ->get();
+        return Indicator::find($id);
     }
 }

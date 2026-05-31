@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Services;
+
 use App\Http\Resources\CampaignSurveyResource;
 use App\Repositories\CampaignSurveyRepository;
 use App\Repositories\CampaingRepository;
@@ -16,30 +18,23 @@ class CampaignSurveyService
         $this->CampaignSurveyRepository = $CampaignSurveyRepository;
         $this->CampaignRepository = $CampaignRepository;
     }
+
     public function showByStage($campaignId, $stage)
     {
-        $campanig = $this->CampaignRepository->getById($campaignId);
-        if (!$campanig) {
-            return [
-                'data' => '',
-                'message' => 'Campaign not found',
-                'code' => 404];
-        }
-        $survey = $this->CampaignSurveyRepository->get($campaignId, $stage);
-        if (!$survey) {
-            return [
-                'data' => '',
-                'message' => 'Survey not found',
-                'code' => 404
-            ];
-        }
-        if ($survey->questions->isEmpty()) {
+        $campaign = $this->CampaignRepository->getById($campaignId);
 
-            return [
-                'data' => [],
-                'message' => 'No questions found',
-                'code' => 200
-            ];
+        if (!$campaign) {
+            return ['data' => '', 'message' => 'Campaign not found', 'code' => 404];
+        }
+
+        $survey = $this->CampaignSurveyRepository->get($campaignId, $stage);
+
+        if (!$survey) {
+            return ['data' => '', 'message' => 'Survey not found', 'code' => 404];
+        }
+
+        if ($survey->surveyQuestions->isEmpty()) {
+            return ['data' => [], 'message' => 'No questions found', 'code' => 200];
         }
 
         return [
@@ -47,5 +42,17 @@ class CampaignSurveyService
             'message' => 'success',
             'code' => 200
         ];
+    }
+
+    public function addQuestionToSurvey($surevyId, \App\Http\Requests\addQuestionToSurveyRequest $request)
+    {
+    }
+
+    public function updateQuestionToSurvey($surevyId, $questionId, \App\Http\Controllers\updateQuestionToSurveyRequest $request)
+    {
+    }
+
+    public function DeleteQuestionToSurvey($surevyId, $questionId)
+    {
     }
 }

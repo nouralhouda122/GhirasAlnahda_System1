@@ -213,19 +213,17 @@ class AttendanceService
             'code' => 200
         ];
     }
-    
-    ///////راية 
-    ///////راية 
-    
+
+    ///////راية
+    ///////راية
+
     public function scanVolunteerQr($request)
     {
-        // 1. جلب بروفايل المتطوع والمستخدم عبر كود الـ QR الممسوح
         $profile = VolunteerProfile::with('user')->where('volunteer_id_code', $request->input('volunteer_id_code'))->first();
 
         if (!$profile) {
             return ['code' => 404, 'message' => 'Volunteer profile not found.', 'data' => null];
         }
-
         // 2. التحقق من أمان وصلاحية بطاقة المتطوع قبل تسجيل الحضور
         if (!$profile->is_active) {
             return ['code' => 403, 'message' => 'This ID card is disabled by administration.', 'data' => null];
@@ -264,11 +262,11 @@ class AttendanceService
         // سـيـنـاريـو الـ Check-Out (تسجيل خروج وحساب الساعات)
         $checkOutTime = Carbon::now();
         $checkInTime  = Carbon::parse($activeSession->check_in_time);
-        
+
         $minutes = $checkOutTime->diffInMinutes($checkInTime);
         $hours   = round($minutes / 60, 2);
 
-        
+
         $this->atendanceRepository->update([
             'check_out_time'    => $checkOutTime,
             'is_active_session' => false,
@@ -281,6 +279,6 @@ class AttendanceService
             'data'    => new AttendanceResource($activeSession->fresh(['volunteer', 'campaign']))
         ];
     }
-    
-    
+
+
     }

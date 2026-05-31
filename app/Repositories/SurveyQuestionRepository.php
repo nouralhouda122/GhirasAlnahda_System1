@@ -1,47 +1,35 @@
 <?php
 
-
 namespace App\Repositories;
 
-
-use App\Models\surveyQuestion;
+use App\Models\SurveyQuestion;
 
 class SurveyQuestionRepository
 {
+    /**
+     * هل السؤال موجود داخل الاستبيان؟
+     */
     public function questionExists(
         $surveyId,
-        $questionText
+        $questionId
     )
     {
-        return SurveyQuestion::where(
-            'survey_id',
-            $surveyId
-        )
-            ->where(
-                'question_text',
-                $questionText
-            )
+        return SurveyQuestion::where('survey_id', $surveyId)
+            ->where('question_id', $questionId)
             ->exists();
     }
 
+    /**
+     * إنشاء ربط سؤال داخل استبيان
+     */
     public function createSurveyQuestion(
         $surveyId,
-        $question
+        $questionId
     )
     {
         return SurveyQuestion::create([
-
             'survey_id' => $surveyId,
-
-            'question_text' =>
-                $question->question_text,
-
-            'type' => $question->type,
-
-            'scale' => $question->scale,
-
-            'order' => $question->order,
+            'question_id' => $questionId,
         ]);
     }
-
 }

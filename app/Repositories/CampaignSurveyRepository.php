@@ -25,14 +25,10 @@ class CampaignSurveyRepository
             ]
         );
     }
-    public function get($campaignId,$stage)
+    public function get($campaignId, $stage)
     {
-        return Survey::with([
-            'questions'
-        ])
+        return Survey::with('surveyQuestions.question.indicators')
             ->where('campaign_id', $campaignId)
             ->where('stage', $stage)
             ->first();
-
-    }
-}
+    }}

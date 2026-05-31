@@ -13,27 +13,21 @@ class CampaignSurveyResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-
-            'survey_id' => $this->id,
-
+            'survey_id'   => $this->id,
             'campaign_id' => $this->campaign_id,
+            'title'       => $this->title,
+            'stage'       => $this->stage,
+            'status'      => $this->status,
 
-            'title' => $this->title,
+            // 🛑 التعديل هنا: استخدام surveyQuestions بدلاً من questions
+            'questions_count' => $this->surveyQuestions ? $this->surveyQuestions->count() : 0,
 
-            'stage' => $this->stage,
+            // 🛑 والتعديل هنا أيضاً لتمرير الكولكشن الصحيح
+            'questions' => SurveyQuestionResource::collection(
+                $this->surveyQuestions
+            ),
 
-            'status' => $this->status,
-
-            'questions_count' =>
-                $this->questions->count(),
-
-            'questions' =>
-                SurveyQuestionResource::collection(
-                    $this->questions
-                ),
-
-            'created_at' =>
-                $this->created_at,
+            'created_at' => $this->created_at,
         ];
     }
 }
