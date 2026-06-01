@@ -218,18 +218,59 @@ $user=$this->userRepository->getById($userId);
 
         return $user;
     }
-
     public function getVisibleUsers($Auth_user): array
+    {
+        // 1. جلب أدوار المستخدم الحالي كمصفوفة نصوص لتجنب مشاكل الـ Guard
+        $authRoles = \DB::table('model_has_roles')
+            ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
+            ->where('model_has_roles.model_id', $Auth_user->id)
+            ->pluck('roles.name')
+            ->toArray();
+
+        // 2. تجهيز الكويري الأساسي للمستخدمين المستهدفين (استثناء المستخدم الحالي)
+        $query = \App\Models\User::where('users.id', '!=', $Auth_user->id);
+
+        // 3. الفحص بالاعتماد على مصفوفة الأدوار التي جلبناها
+        if (in_array('Super Admin', $authRoles)) {
+            // السوبر أدمن يرى الجميع
+        }
+        elseif (in_array('Campaign Manager', $authRoles)) {
+            // مدير الحملة يرى الأدوار 2 و 4 (Campaign Employee, Volunteer Manager)
+            $query->whereHas('roles', function ($q) {
+                $q->whereIn('roles.id', [2, 4]);
+            });
+        }
+        elseif (in_array('Evaluation Manager', $authRoles)) {
+            // مدير المراقبة يرى فقط موظف المراقبة (Evaluation Officer) والذي يحمل الرقم 6 👈
+            $query->whereHas('roles', function ($q) {
+                $q->where('roles.id', 6); // ربط مباشر ومضمون برقم الـ ID في الداتابيز
+            });
+        }
+        else {
+            return [
+                'user'    => [],
+                'message' => 'successfully',
+                'code'    => 200
+            ];
+        }
+
+        // جلب البيانات وتمريرها للـ Resource
+        $visibleUsers = $query->get();
+
+        return [
+            'user'    => UserResource::collection($visibleUsers),
+            'message' => 'successfully',
+            'code'    => 200
+        ];
+    }    public function getVisibleUsersdd($Auth_user): array
     {
         $data = $this->userRepository->getAll();
         $array = [];
-
         foreach ($data as $user) {
             if ($Auth_user->id !== $user->id && $Auth_user->can('view', $user)) {
                 $array[] = $user;
             }
         }
-
         return [
             'user' => UserResource::collection($array),
             'message' => 'successfully',
