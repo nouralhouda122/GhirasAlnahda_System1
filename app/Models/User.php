@@ -85,4 +85,14 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
+
+
+
+    /**
+ * جلب جميع توكنات الأجهزة الخاصة بالمستخدم (تعدد الأجهزة)
+ */
+public function fcmTokens()
+{
+    return $this->hasMany(UserFcmToken::class, 'user_id');
+}
 }

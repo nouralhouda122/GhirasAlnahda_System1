@@ -215,18 +215,28 @@ class AttendanceService
     }
     
     ///////راية 
-    ///////راية 
+ 
     
     public function scanVolunteerQr($request)
     {
-        // 1. جلب بروفايل المتطوع والمستخدم عبر كود الـ QR الممسوح
+        $currentUser = Auth::user();
+        $campaignId  = $request->input('campaign_id');
+
+        $campaign = $this->CampaingRepository->getById($campaignId);
+        if (!$campaign) {
+            return ['code' => 404, 'message' => 'Campaign not found.', 'data' => null];
+        }
+
+        if ($campaign->leader_id !== $currentUser->id) {
+            return ['code' => 403, 'message' => 'Unauthorized. Only the team leader of this campaign can scan QR codes.', 'data' => null];
+        }
+
         $profile = VolunteerProfile::with('user')->where('volunteer_id_code', $request->input('volunteer_id_code'))->first();
 
         if (!$profile) {
             return ['code' => 404, 'message' => 'Volunteer profile not found.', 'data' => null];
         }
 
-        // 2. التحقق من أمان وصلاحية بطاقة المتطوع قبل تسجيل الحضور
         if (!$profile->is_active) {
             return ['code' => 403, 'message' => 'This ID card is disabled by administration.', 'data' => null];
         }
@@ -235,16 +245,21 @@ class AttendanceService
             return ['code' => 403, 'message' => 'This ID card has expired.', 'data' => null];
         }
 
-        $volunteer  = $profile->user;
-        $campaignId = $request->input('campaign_id');
+        $isVolunteerApprovedInCampaign = DB::table('campaign_volunteer')
+            ->where('campaign_id', $campaignId)
+            ->where('volunteer_profile_id', $profile->id)
+            ->where('status', 'approved')
+            ->exists();
+        
+        if (!$isVolunteerApprovedInCampaign) {
+            return ['code' => 400, 'message' => 'This volunteer is not approved or registered in this campaign.', 'data' => null];
+        }
 
-        // 3. فحص هل توجد جلسة مفتوحة (Check-In أم Check-Out)؟
-        // 🛠️ التعديل هنا: استخدام الاسم بـ t واحدة ليطابق الـ Constructor الخاص بزميلتكِ
+        $volunteer = $profile->user;
+
         $activeSession = $this->atendanceRepository->findActiveVolunteerSession($volunteer->id, $campaignId);
 
         if (!$activeSession) {
-            // سـيـنـاريـو الـ Check-In (تسجيل دخول جديد)
-            // 🛠️ التعديل هنا أيضاً: atendanceRepository
             $attendance = $this->atendanceRepository->create([
                 'volunteer_id'       => $volunteer->id,
                 'campaign_id'        => $campaignId,
@@ -268,7 +283,6 @@ class AttendanceService
         $minutes = $checkOutTime->diffInMinutes($checkInTime);
         $hours   = round($minutes / 60, 2);
 
-        
         $this->atendanceRepository->update([
             'check_out_time'    => $checkOutTime,
             'is_active_session' => false,
@@ -281,6 +295,5 @@ class AttendanceService
             'data'    => new AttendanceResource($activeSession->fresh(['volunteer', 'campaign']))
         ];
     }
-    
     
     }

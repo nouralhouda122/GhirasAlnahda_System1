@@ -9,10 +9,15 @@ use App\Services\VolunteerRequestService;
 class VolunteerRequestController extends Controller
 {protected $service;
 
-    public function __construct(VolunteerRequestService $service)
-    {
-        $this->service = $service;
-    }
+protected $notificationRepo; // أضفنا هذه الخاصية
+
+// حقن المستودع هنا في المعاملات
+public function __construct(VolunteerRequestService $service, \App\Repositories\NotificationRepository $notificationRepo)
+{
+    $this->service = $service;
+    $this->notificationRepo = $notificationRepo;
+}
+
     public function index()
     {
         $requests = $this->service->getPendingRequests();
@@ -115,4 +120,20 @@ class VolunteerRequestController extends Controller
     }
 
 
+
+
+    public function getMyNotifications()
+{
+    // 1. جلب الـ ID الخاص بالمستخدم المسجل دخوله حالياً من التوكن (المتطوع)
+    $userId = auth()->id(); 
+
+    // 2. استدعاء الدالة المجهزة في الريبوزيتوري لجلب إشعاراته
+    $notifications = $this->notificationRepo->getForUser($userId);
+
+    // 3. إرجاع الإشعارات كاستجابة JSON
+    return response()->json([
+        'success' => true,
+        'data' => $notifications
+    ]);
+}
 }
