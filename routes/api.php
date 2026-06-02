@@ -1,5 +1,5 @@
 <?php
-
+use App\Http\Controllers\DeviceTokenController;
 use App\Http\Controllers\ApprovalRequestController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuthController;
@@ -167,9 +167,10 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
     // مسار معالجة ورد الإدارة على شكوى معينة
     Route::put('complaints/{id}/review', [ComplaintController::class, 'review']);
 
+///قسم الاشعارات 
+Route::post('/update-device-token', [DeviceTokenController::class, 'updateDeviceToken']);
 
-
-
+Route::get('/my-notifications', [VolunteerRequestController::class, 'getMyNotifications']);
 
 
 });

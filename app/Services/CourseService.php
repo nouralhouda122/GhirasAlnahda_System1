@@ -13,6 +13,8 @@ use App\Repositories\userRepository;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Services\FcmNotificationService; // استدعاء السيرفس الخاصة بنا
+use App\Models\User; // استدعاء موديل المستخدم
 use function Symfony\Component\Cache\Adapter\save;
 
 class CourseService
@@ -82,6 +84,10 @@ class CourseService
                 'approvable_type' => 'course',
                 'requested_by'=>Auth::user()->id
             ]);
+
+         
+
+
             return [
                 'user' =>new CourseResource($Course) ,
                 'message' => 'Course created successfully',
