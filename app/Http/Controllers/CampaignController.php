@@ -1,16 +1,15 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use App\Helpers\ResponseHelper;
 use App\Http\Requests\ApprovalRequest;
 use App\Http\Requests\CampaingRequest;
+use App\Http\Requests\SearchCampaignRequest;
 use App\Http\Requests\SearchForPermissionsAndRolesRequest;
 use App\Models\Campaign;
 use App\Services\CampaignService;
 use App\Services\UserService;
 use Illuminate\Http\Request;
-
 class CampaignController extends Controller
 {
     protected $campaignService;
@@ -76,7 +75,7 @@ class CampaignController extends Controller
         }
     }
 //بحث عن حملة
-    public function SearchCampaign(SearchForPermissionsAndRolesRequest  $request)
+    public function SearchCampaign(SearchCampaignRequest  $request)
     {
         $data=$this->campaignService->SearchCampaign($request);
         if($data['code']===200){

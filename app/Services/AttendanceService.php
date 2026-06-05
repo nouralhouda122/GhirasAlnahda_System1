@@ -279,7 +279,7 @@ class AttendanceService
         // سـيـنـاريـو الـ Check-Out (تسجيل خروج وحساب الساعات)
         $checkOutTime = Carbon::now();
         $checkInTime  = Carbon::parse($activeSession->check_in_time);
-        
+
         $minutes = $checkOutTime->diffInMinutes($checkInTime);
         $hours   = round($minutes / 60, 2);
 

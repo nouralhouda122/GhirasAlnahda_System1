@@ -2,36 +2,34 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\SurveyQuestion;
 class Survey extends Model
 {
-    protected $fillable = [
-        'campaign_id',
-        'indicator_id',
-        'stage',
-        'title',
-        'status'
-    ];
+    use HasFactory;
+
+    protected $guarded = [];
+
 
     public function campaign()
     {
-        return $this->belongsTo(Campaign::class);
+        return $this->belongsTo(
+            Campaign::class
+        );
     }
 
-    public function indicator()
+    public function surveyQuestions(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->belongsTo(Indicator::class);
+        return $this->hasMany(
+            SurveyQuestion::class,
+            'survey_id'
+        );
     }
-
-    public function questions()
-    {
-        return $this->hasMany(surveyQuestion::class);
-    }
-
     public function answers()
     {
-        return $this->hasMany(surveyAnswer::class);
+        return $this->hasMany(
+            SurveyAnswer::class
+        );
     }
 }

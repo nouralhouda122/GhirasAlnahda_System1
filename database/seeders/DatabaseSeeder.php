@@ -12,7 +12,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             DepartmentSeeder::class,
             indicatorsSeeder::class,
-
+            QuestionSeeder::class,
+            IndicatorSurveyQuestionSeeder::class,
             ManagerCampanigSedder::class,
             RolePermissionSeeder::class,
         ]);

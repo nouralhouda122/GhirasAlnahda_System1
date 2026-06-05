@@ -12,7 +12,6 @@ class ComplaintController extends Controller
 {
     protected ComplaintService $complaintService;
 
-    // حقن السيرفس داخل الكنترولر تماشياً مع الـ SOLID Principles
     public function __construct(ComplaintService $complaintService)
     {
         $this->complaintService = $complaintService;

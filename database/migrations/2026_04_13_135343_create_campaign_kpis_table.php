@@ -14,8 +14,7 @@ return new class extends Migration
         Schema::create('campaign_kpis', function (Blueprint $table) {
             $table->id();
             $table->foreignId('campaign_id')->constrained()->cascadeOnDelete();
-            $table->text('goal_text'); // الهدف النصي
-            // Step 1 output
+            $table->text('goal_text');
             $table->string('domain')->nullable();
             $table->string('intent')->nullable();
             $table->string('type')->nullable();

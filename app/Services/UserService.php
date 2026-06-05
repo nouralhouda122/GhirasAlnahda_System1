@@ -240,7 +240,8 @@ class UserService
 
         return $user;
     }
-
+   
+  
     public function getVisibleUsers($Auth_user): array
     {
         // 1. جلب أدوار المستخدم الحالي كمصفوفة نصوص لتجنب مشاكل الـ Guard

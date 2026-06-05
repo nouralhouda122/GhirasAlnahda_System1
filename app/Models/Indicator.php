@@ -26,12 +26,24 @@ class Indicator extends Model
         'tags' => 'array',
         'needs_survey' => 'boolean',
         'is_computable' => 'boolean',
-
     ];
+
+    public function questions()
+    {
+        return $this->belongsToMany(
+            Question::class,
+            'indicator_survey_question',
+            'indicator_id',
+            'question_id'
+        )
+            ->withPivot('phase')
+            ->withTimestamps();
+    }
+
     public function goals()
     {
         return $this->belongsToMany(
-            \App\Models\Campaign_kpi::class,
+            Campaign_kpi::class,
             'goal_indicator',
             'indicator_id',
             'campaign_kpi_id'

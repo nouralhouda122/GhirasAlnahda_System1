@@ -7,17 +7,12 @@ use Illuminate\Validation\Rule;
 
 class updateStatusIndicatorRequest extends FormRequest
 {
-    /**
-     * تحديد ما إذا كان المستخدم مخولاً لإجراء هذا الطلب.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * شروط التحقق التي تنطبق على الطلب (Validation Rules).
-     */
+
     public function rules(): array
     {
         return [
@@ -29,9 +24,6 @@ class updateStatusIndicatorRequest extends FormRequest
         ];
     }
 
-    /**
-     * تخصيص رسائل الخطأ باللغة العربية.
-     */
     public function messages(): array
     {
         return [
