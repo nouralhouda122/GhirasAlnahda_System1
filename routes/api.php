@@ -36,6 +36,7 @@ use Illuminate\Support\Facades\Route;
 */
 Route::post('register', [AuthController::class, 'register']);
 Route::post('verify', [AuthController::class, 'verify']);
+Route::post('resend-verification-code',[AuthController::class, 'resendVerificationCode']);
 Route::post('login', [\App\Http\Controllers\AuthController::class, 'login'])->middleware('role.throttle');
 Route::middleware(['auth:sanctum','check.banned'])->group(function () {
     //قسم الحملة

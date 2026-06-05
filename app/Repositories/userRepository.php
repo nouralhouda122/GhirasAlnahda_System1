@@ -19,7 +19,7 @@ class userRepository
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
             'phone' => $data['phone'],
-            'email_verified_at' => now(),
+            'email_verified_at' => null,
         ]);
     }
     public function create_instructor(array $data): User

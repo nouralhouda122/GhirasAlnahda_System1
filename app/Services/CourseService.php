@@ -13,12 +13,16 @@ use App\Repositories\userRepository;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+
 use App\Services\FcmNotificationService; // استدعاء السيرفس الخاصة بنا
 use App\Models\User; // استدعاء موديل المستخدم
 use function Symfony\Component\Cache\Adapter\save;
 
 class CourseService
 {
+
+
+private FcmNotificationService $fcmNotificationService;
     public function __construct(
         EnrollmentRepository $EnrollmentRepository,
         ApprovalRequestRepository $approvalRequestRepository,
@@ -28,6 +32,7 @@ class CourseService
         CourseScheduleRepository $scheduleRepository,
         UserRepository $userRepository,
         instructor_profileRepository $profileRepository,
+        FcmNotificationService $fcmNotificationService,
         SpecializationRepository $specializationRepository
     ){
         $this->courseRepository = $courseRepository;
@@ -38,7 +43,8 @@ class CourseService
         $this->profileRepository = $profileRepository;
         $this->specializationRepository = $specializationRepository;
         $this->approvalRequestRepository = $approvalRequestRepository;
-
+        $this->fcmNotificationService = $fcmNotificationService;
+       
     }
     public function create(CourseRequest $request)
     {
@@ -85,7 +91,22 @@ class CourseService
                 'requested_by'=>Auth::user()->id
             ]);
 
-         
+         $superAdmin = User::role('Super Admin')->first();
+
+if ($superAdmin) {
+
+    $this->fcmNotificationService->sendNotification(
+        $superAdmin,
+        'New Course Approval Request',
+        'A new course has been submitted and requires approval.',
+        'course_approval_request',
+        'admin',
+        [
+            'course_id' => (string)$Course->id,
+            'course_name' => $Course->course_name ?? ''
+        ]
+    );
+}
 
 
             return [

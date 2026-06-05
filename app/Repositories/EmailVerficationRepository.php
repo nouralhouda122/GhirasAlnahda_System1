@@ -27,6 +27,12 @@ class EmailVerficationRepository
             ->first();
 
     }
+    public function getLatestByEmail(string $email)
+{
+    return EmailVerification::where('email', $email)
+        ->latest()
+        ->first();
+}
 
 
 }

@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 use App\Services\UserService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Routing\Controller;
-
+use App\Http\Requests\ResendVerificationRequest;
 class AuthController extends Controller
 {
     protected $userService;
@@ -46,6 +46,33 @@ class AuthController extends Controller
             return ResponseHelper::Error($data['user'], $data['message'], $data['code']);
         }
     }
+
+
+
+
+    
+    ////اعادة ارسال رسالة التحقق
+
+    public function resendVerificationCode(
+    ResendVerificationRequest $request
+)
+{
+    $data = $this->userService
+        ->resendVerificationCode($request);
+
+    return ($data['code'] === 200)
+        ? ResponseHelper::Success(
+            $data['user'],
+            $data['message'],
+            $data['code']
+        )
+        : ResponseHelper::Error(
+            $data['user'],
+            $data['message'],
+            $data['code']
+        );
+}
+
     public function logout()
     {
         $data = [];
@@ -56,5 +83,8 @@ class AuthController extends Controller
             return ResponseHelper::Error(null, "Unexpected error: " . $e->getMessage(), 500);
         }
     }
+
+
+    
 }
 
