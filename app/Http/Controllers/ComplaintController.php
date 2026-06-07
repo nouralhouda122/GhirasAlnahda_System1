@@ -65,7 +65,7 @@ class ComplaintController extends Controller
     {
         $request->validate([
             'status'      => 'required|in:in_progress,resolved,rejected',
-            'admin_reply' => 'required|string|min:5'
+            'admin_reply' => 'string|min:5'
         ]);
 
         try {
@@ -82,4 +82,28 @@ class ComplaintController extends Controller
             ], $e->getCode() ?: 400);
         }
     }
+
+
+    public function show(int $id): JsonResponse
+{
+    $complaint = $this->complaintService->getComplaintById($id);
+
+    return response()->json([
+        'status' => true,
+        'data' => $complaint
+    ], 200);
+}
+
+public function filter(Request $request): JsonResponse
+{
+    $complaints = $this->complaintService->filterComplaints(
+        $request->status,
+        $request->sensitivity ?? $request->sensitivity_level
+    );
+
+    return response()->json([
+        'status' => true,
+        'data' => $complaints
+    ], 200);
+}
 }

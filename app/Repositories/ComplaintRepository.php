@@ -41,4 +41,9 @@ class ComplaintRepository
     {
         return $complaint->update($data);
     }
+    public function queryFiltered()
+{
+    return Complaint::withControlPermission()
+        ->with('user:id,name,email');
+}
 }

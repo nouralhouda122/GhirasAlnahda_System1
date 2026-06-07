@@ -15,19 +15,21 @@ use App\Repositories\userRepository;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-
+use App\Services\FcmNotificationService;
 class CampaignService
 {
     public function __construct(
         CampaingRepository $CampaignRepository,
         KPIBrain $KPIBrain,
         IndicatorMatchingService $indicatorService,
-        UserService   $userService
+        UserService   $userService,
+           FcmNotificationService $fcmService
     ) {
         $this->CampaignRepository = $CampaignRepository;
         $this->KPIBrain = $KPIBrain;
         $this->indicatorService = $indicatorService;
         $this->userService=$userService;
+          $this->fcmService = $fcmService;
     }
     public function create(CampaingRequest $request)
     {
@@ -69,7 +71,23 @@ class CampaignService
                         'indicators' => $indicators
                     ];
                 }
-            }
+            
+            
+            $managers = \App\Models\User::role('Evaluation Manager')->get();
+           foreach ($managers as $manager) {
+    $this->fcmService->sendNotification(
+        $manager,
+        'حملة جديدة',
+        'تم إنشاء حملة جديدة تحتاج مراجعة من قسم التقييم والمتابعة',
+        'new_campaign',
+        'manager',
+        [
+            'campaign_id' => $campaign->id
+        ]
+    );
+}
+                }
+            
 
             return [
                 'user' => new CampaignDetailsResource($campaign),

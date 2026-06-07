@@ -37,11 +37,10 @@ return new class extends Migration
             ])->default('level_1');
 
 
-            $table->enum('assigned_role', [
-                'support_team',
-                'department_manager',
-                'general_manager'
-            ])->default('support_team');
+          $table->enum('assigned_role', [
+             'Campaign Manager',
+             'Evaluation Manager',
+              'Super Admin']);
 
             /*
             |--------------------------------------------------------------------------

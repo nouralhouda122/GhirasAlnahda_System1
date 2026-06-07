@@ -6,18 +6,26 @@ use App\Models\JoinRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Services\VolunteerRequestService;
+use App\Models\User;
+use App\Services\FcmNotificationService;
 class VolunteerRequestController extends Controller
-{protected $service;
-
+{
+    protected $service;
+    protected $fcmNotificationService;
 protected $notificationRepo; // أضفنا هذه الخاصية
 
 // حقن المستودع هنا في المعاملات
-public function __construct(VolunteerRequestService $service, \App\Repositories\NotificationRepository $notificationRepo)
+
+public function __construct(
+    VolunteerRequestService $service,
+    \App\Repositories\NotificationRepository $notificationRepo,
+    FcmNotificationService $fcmNotificationService
+)
 {
     $this->service = $service;
     $this->notificationRepo = $notificationRepo;
+    $this->fcmNotificationService = $fcmNotificationService;
 }
-
     public function index()
     {
         $requests = $this->service->getPendingRequests();
@@ -48,6 +56,23 @@ public function __construct(VolunteerRequestService $service, \App\Repositories\
     $data['status']  = 'pending';
 
     $joinRequest = \App\Models\JoinRequest::create($data);
+
+        $campaignManager = \App\Models\User::role('Campaign Manager')->first();
+
+    if ($campaignManager) {
+
+        $this->fcmNotificationService->sendNotification(
+            $campaignManager,
+            'New Volunteer Request',
+            'New volunteer request from ' . auth()->user()->name,
+            'new_volunteer_request',
+            'manager',
+            [
+                'join_request_id' => (string)$joinRequest->id,
+                'volunteer_id' => (string)auth()->id()
+            ]
+        );
+    }
 
     return response()->json([
         'message' => 'Volunteer request submitted successfully!',

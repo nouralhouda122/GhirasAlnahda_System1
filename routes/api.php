@@ -159,15 +159,24 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
     Route::get('showMyCampanig', [CampaignController::class, 'showMyCampanig']);
 
     /////////////////////Complaint with Raya heeeeeeeeheeeee
+// metadata (ثابت)
+Route::get('meta-data', [ComplaintController::class, 'metaData']);
 
-    //توضيح للحساسيات وانواعها
-    Route::get('complaintsMeta-data', [ComplaintController::class, 'metaData']);
-    Route::get('showComplaints', [ComplaintController::class, 'index']);
-    Route::post('Addcomplaints', [ComplaintController::class, 'store']);
+// filter (ثابت)
+Route::get('complaints/filter', [ComplaintController::class, 'filter']);
 
-    // مسار معالجة ورد الإدارة على شكوى معينة
-    Route::put('complaints/{id}/review', [ComplaintController::class, 'review']);
+// list
+Route::get('showComplaints', [ComplaintController::class, 'index']);
 
+// create
+Route::post('addcomplaints', [ComplaintController::class, 'store']);
+
+// review
+Route::post('complaintsreview/{id}', [ComplaintController::class, 'review']);
+
+// show single (لازم يكون آخر شيء)
+Route::get('complaints/{id}', [ComplaintController::class, 'show'])
+    ->whereNumber('id');
 ///قسم الاشعارات 
 Route::post('/update-device-token', [DeviceTokenController::class, 'updateDeviceToken']);
 
