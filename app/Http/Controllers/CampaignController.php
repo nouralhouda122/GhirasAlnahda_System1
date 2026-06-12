@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 use App\Helpers\ResponseHelper;
 use App\Http\Requests\ApprovalRequest;

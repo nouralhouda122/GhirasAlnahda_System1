@@ -113,6 +113,16 @@ class UserController extends Controller
         else {
             return ResponseHelper::Error($data['user'], $data['message'], $data['code']);
         }}
+    public function searchVolunteer(searchUserRequest $request){
+        $data=$this->userService->searchVolunteer($request);
+        if ($data['code'] === 200) {
+            return ResponseHelper::Success([
+                'data' => $data['users'],
+                'meta' => $data['meta']
+            ], $data['message'], $data['code']);        }
+        else {
+            return ResponseHelper::Error($data['user'], $data['message'], $data['code']);
+        }}
 
     public function UpdateEmployee(UpdateUserRequest $request,$id){
         $data=$this->userService->UpdateEmployee($request,$id);

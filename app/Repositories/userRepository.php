@@ -119,6 +119,20 @@ class userRepository
         ->withSum('receivedPoints as total_points', 'points')
         ->orderByDesc('total_points')
         ->take($limit)
-        ->get();
+        ->get();}
+    public function searchVolunteer(\App\Http\Requests\searchUserRequest $request)
+    {
+        $data = $request->only(['name', 'page']);
+        $cachKey = 'user_search_' . md5(json_encode($data));
+        return Cache::remember($cachKey, 60, function () use ($request) {
+            $query = User::query()
+                ->role('Volunteer')
+                ->select('id', 'name');
+            if ($request->filled('name')) {
+                $query->where('name', 'like', $request->name . '%');
+            }
+
+            return $query->paginate(10);
+        });
 }
 }

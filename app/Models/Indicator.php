@@ -44,9 +44,8 @@ class Indicator extends Model
     {
         return $this->belongsToMany(
             Campaign_kpi::class,
-            'goal_indicator',
+            'goal_indicators',
             'indicator_id',
             'campaign_kpi_id'
         );
-    }
-}
+    }}

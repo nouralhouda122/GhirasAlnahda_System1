@@ -11,13 +11,11 @@ class SurveyQuestion extends Model
 
     protected $guarded = [];
 
-    // العلاقة العكسية مع الاستبيان
     public function survey()
     {
         return $this->belongsTo(Survey::class, 'survey_id');
     }
 
-    // 🛑 العلاقة الأساسية للوصول لبيانات السؤال (تأكد من وجودها هكذا)
     public function question()
     {
         return $this->belongsTo(Question::class, 'question_id', 'id');

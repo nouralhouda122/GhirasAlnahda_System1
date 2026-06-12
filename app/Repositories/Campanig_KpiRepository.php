@@ -14,6 +14,18 @@ class Campanig_KpiRepository
         ])
             ->where('campaign_id',$campanig_id)->get();
     }
+    public function getCampaignGoals(
+        int $campaignId
+    )
+    {
+        return Campaign_kpi::with('indicators')
+            ->where(
+                'campaign_id',
+                $campaignId
+            )
+            ->get();
+    }
+
     public function findGoalWithIndicators($goalId)
     {
         return Campaign_kpi::with([

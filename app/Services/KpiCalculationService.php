@@ -2,132 +2,198 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\DB;
+use App\Models\Indicator;
+use App\Models\SurveyAnswer;
+use App\Models\SurveyQuestion;
 
 class KpiCalculationService
 {
-    /**
-     * 🟢 Entry Point: حساب KPI كامل
-     */
-    public function calculate($indicator, $campaignId)
-    {
-        return match ($indicator->type) {
+    public function calculate(
+        Indicator $indicator,
+        int $campaignId
+    ): array {
 
-            'numeric' => $this->calculateNumeric($indicator, $campaignId),
+        $trend = $this->calculateTrend(
+            $indicator,
+            $campaignId
+        );
 
-            'qualitative' => $this->calculateQualitative($indicator, $campaignId),
+        $score = round(
+            collect($trend)->avg(),
+            2
+        );
 
-            default => 0,
-        };
+        return [
+
+            'indicator_id' => $indicator->id,
+
+            'indicator_name' => $indicator->name,
+
+            'score' => $score,
+
+            'achievement' => $this->achievement(
+                $score,
+                $indicator->target_value ?? 100
+            ),
+
+            'status' => $this->status(
+                $score
+            ),
+
+            'direction' => $this->direction(
+                $trend
+            ),
+
+            'trend' => $trend
+        ];
     }
 
-    // =====================================================
-    // 🟢 NUMERIC KPI (Database-based)
-    // =====================================================
-    private function calculateNumeric($indicator, $campaignId)
-    {
-        $query = DB::table($indicator->table_name)
-            ->where('campaign_id', $campaignId);
+    private function calculateTrend(
+        Indicator $indicator,
+        int $campaignId
+    ): array {
 
-        $value = match ($indicator->calculation_type) {
+        return [
 
-            'count' => $query->count(),
+            'before' => $this->phaseScore(
+                $indicator,
+                $campaignId,
+                'before'
+            ),
 
-            'sum' => $query->sum($indicator->column_name),
+            'during' => $this->phaseScore(
+                $indicator,
+                $campaignId,
+                'during'
+            ),
 
-            'avg' => $query->avg($indicator->column_name),
-
-            'percentage' => $this->calculatePercentage($query, $indicator),
-
-            default => 0,
-        };
-
-        return $this->normalize($value, $indicator->target_value);
+            'after' => $this->phaseScore(
+                $indicator,
+                $campaignId,
+                'after'
+            )
+        ];
     }
 
-    // =====================================================
-    // 🟡 QUALITATIVE KPI (Survey Engine)
-    // =====================================================
-    private function calculateQualitative($indicator, $campaignId)
-    {
-        // 🔥 جلب كل الأسئلة المرتبطة بهذا الـ KPI
-        $questions = DB::table('indicator_survey_question')
-            ->where('indicator_id', $indicator->id)
-            ->pluck('survey_question_id');
+    private function phaseScore(
+        Indicator $indicator,
+        int $campaignId,
+        string $phase
+    ): float {
 
-        if ($questions->isEmpty()) {
+        $questionIds = $indicator
+            ->questions()
+            ->wherePivot('phase', $phase)
+            ->pluck('questions.id');
+
+        if ($questionIds->isEmpty()) {
             return 0;
         }
 
-        // 🔥 حساب متوسط الإجابات
-        $avg = DB::table('survey_answers')
-            ->whereIn('survey_question_id', $questions)
-            ->where('campaign_id', $campaignId)
+        $surveyQuestionIds = SurveyQuestion::query()
+
+            ->whereIn(
+                'question_id',
+                $questionIds
+            )
+
+            ->whereHas(
+                'survey',
+                function ($q) use (
+                    $campaignId,
+                    $phase
+                ) {
+
+                    $q->where(
+                        'campaign_id',
+                        $campaignId
+                    )
+                        ->where(
+                            'stage',
+                            $phase
+                        );
+                }
+            )
+
+            ->pluck('id');
+
+        if ($surveyQuestionIds->isEmpty()) {
+            return 0;
+        }
+
+        $average = SurveyAnswer::query()
+
+            ->whereIn(
+                'survey_question_id',
+                $surveyQuestionIds
+            )
+
             ->avg('answer');
 
-        $max = 5; // scale (1–5)
-
-        return $this->normalize(($avg / $max) * 100, $indicator->target_value);
-    }
-
-    // =====================================================
-    // 📊 Percentage logic (generic)
-    // =====================================================
-    private function calculatePercentage($query, $indicator)
-    {
-        $total = $query->count();
-
-        if ($total === 0) return 0;
-
-        // مثال عام: نجاحات
-        $success = (clone $query)
-            ->where('status', 'success')
-            ->count();
-
-        return ($success / $total) * 100;
-    }
-
-    // =====================================================
-    // 🎯 Normalize to target (0 - 100)
-    // =====================================================
-    private function normalize($value, $target = null)
-    {
-        if (!$target || $target == 0) {
-            return round($value, 2);
+        if (!$average) {
+            return 0;
         }
 
-        return round(min(($value / $target) * 100, 100), 2);
-    }
-
-    // =====================================================
-    // 🧠 Advanced: KPI with phase breakdown
-    // =====================================================
-    public function calculateByPhase($indicator, $campaignId)
-    {
-        $phases = ['before', 'during', 'after'];
-
-        $results = [];
-
-        foreach ($phases as $phase) {
-
-            $questions = DB::table('indicator_survey_question')
-                ->where('indicator_id', $indicator->id)
-                ->where('phase', $phase)
-                ->pluck('survey_question_id');
-
-            $avg = DB::table('survey_answers')
-                ->whereIn('survey_question_id', $questions)
-                ->where('campaign_id', $campaignId)
-                ->avg('answer');
-
-            $results[$phase] = $avg ? round(($avg / 5) * 100, 2) : 0;
-        }
-
-        // 🔥 مثال: وزن المراحل (قبل 20% - أثناء 30% - بعد 50%)
-        return (
-            ($results['before'] * 0.2) +
-            ($results['during'] * 0.3) +
-            ($results['after'] * 0.5)
+        return round(
+            ($average / 5) * 100,
+            2
         );
+    }
+
+    private function achievement(
+        float $score,
+        float $target
+    ): float {
+
+        if ($target <= 0) {
+            return $score;
+        }
+
+        return round(
+            min(
+                ($score / $target) * 100,
+                100
+            ),
+            2
+        );
+    }
+
+    private function status(
+        float $score
+    ): string {
+
+        return match (true) {
+
+            $score >= 80 => 'excellent',
+
+            $score >= 60 => 'good',
+
+            $score >= 40 => 'warning',
+
+            default => 'critical'
+        };
+    }
+
+    private function direction(
+        array $trend
+    ): string {
+
+        if (
+            $trend['after']
+            >
+            $trend['before']
+        ) {
+            return 'up';
+        }
+
+        if (
+            $trend['after']
+            <
+            $trend['before']
+        ) {
+            return 'down';
+        }
+
+        return 'stable';
     }
 }

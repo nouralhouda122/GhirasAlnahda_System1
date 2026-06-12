@@ -20,10 +20,12 @@ use App\Repositories\RoleRepository;
 use App\Repositories\userRepository;
 use Carbon\Carbon;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\UserStatusMail;
+
 class UserService
 {
     use AuthorizesRequests;
@@ -157,6 +159,38 @@ class UserService
         ];
     }
 
+
+        $user = User::with('roles.permissions', 'permissions')->find($user->id);
+        $user = $this->appendRolesAndPermission($user);
+        $user['token'] = $user->createToken('token')->plainTextToken;
+
+        return [
+            'user' => $user,
+            'message' => 'Login successful',
+            'code' => 200
+        ];
+    }
+
+    public function logout(): array
+    {
+        $user = Auth::user();
+
+        if ($user) {
+            $user->currentAccessToken()->delete();
+            $message = 'User logged out successfully';
+            $code = 200;
+        } else {
+            $message = 'Invalid token';
+            $code = 404;
+        }
+
+        return [
+            'user' => null,
+            'message' => $message,
+            'code' => $code
+        ];
+    }
+
     public function assignDepartmentManager($departmentId, $userId)
     {
         $department = $this->departmentRepository->find($departmentId);
@@ -242,6 +276,7 @@ class UserService
     }
    
   
+
     public function getVisibleUsers($Auth_user): array
     {
         // 1. جلب أدوار المستخدم الحالي كمصفوفة نصوص لتجنب مشاكل الـ Guard
@@ -438,6 +473,7 @@ class UserService
         )
     );
 }
+
         return [
             'user' => new UserResource($user),
             'message' => $user->status === 'banned' ? 'User banned successfully' : 'User activated successfully',
@@ -487,5 +523,24 @@ class UserService
             'message' => 'Verification code sent successfully',
             'code' => 200
         ];
+    }
+}
+
+    public function searchVolunteer(searchUserRequest $request)
+    {
+        $user = $this->userRepository->searchVolunteer($request);
+
+        return [
+            'users' => UserResource::collection($user),
+            'meta' => [
+                'current_page' => $user->currentPage(),
+                'last_page' => $user->lastPage(),
+                'per_page' => $user->perPage(),
+                'total' => $user->total(),
+            ],
+            'message' => 'Users retrieved successfully',
+            'code' => 200
+        ];
+
     }
 }

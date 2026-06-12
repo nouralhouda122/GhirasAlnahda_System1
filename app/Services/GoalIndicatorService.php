@@ -10,8 +10,8 @@ class GoalIndicatorService
 {
     protected $goalIndicatorRepository;
     protected $CampaignRepository;
-   protected  $indicatorRepository;
-   protected  $goal_IndicatorRepository;
+    protected  $indicatorRepository;
+    protected  $goal_IndicatorRepository;
     protected  $campaignSurveyService;
     public function __construct(
         Campanig_KpiRepository $goalIndicatorRepository,
@@ -22,7 +22,7 @@ class GoalIndicatorService
     ) {
         $this->goalIndicatorRepository = $goalIndicatorRepository;
         $this->CampaignRepository = $CampaignRepository;
-                    $this->indicatorRepository = $indicatorRepository;
+        $this->indicatorRepository = $indicatorRepository;
         $this->goal_IndicatorRepository = $goal_IndicatorRepository;
         $this->campaignSurveyService =$campaignSurveyService;
     }
@@ -78,7 +78,7 @@ class GoalIndicatorService
 
             'code' => 200
         ];}
-        public function updateStatus($request, $goal_id, $indicator_id)
+    public function updateStatus($request, $goal_id, $indicator_id)
     {
         $goal = $this->goalIndicatorRepository
             ->findGoalWithIndicators($goal_id);

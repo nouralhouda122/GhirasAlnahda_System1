@@ -63,7 +63,10 @@ class Campaign extends Model
     {
         return $this->hasMany(Attendance::class);
     }
-    public function goals() {
-        return $this->belongsToMany(Campaign_kpi::class, 'goal_indicators');
-    }
-}
+    public function goals()
+    {
+        return $this->hasMany(
+            Campaign_kpi::class,
+            'campaign_id'
+        );
+    }}
