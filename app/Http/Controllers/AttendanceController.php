@@ -82,7 +82,7 @@ public function scanVolunteerQr(ScanQrAttendanceRequest $request)
     } else {
         return ResponseHelper::Error($data['data'], $data['message'], $data['code']);
     }
-}
+} 
 
 }
 

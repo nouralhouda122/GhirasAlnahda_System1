@@ -111,4 +111,14 @@ class userRepository
         $user->update($data);
         return $user;
     }
+
+
+    public function getTopVolunteers(int $limit = 5)
+{
+    return \App\Models\User::role('volunteer')
+        ->withSum('receivedPoints as total_points', 'points')
+        ->orderByDesc('total_points')
+        ->take($limit)
+        ->get();
+}
 }

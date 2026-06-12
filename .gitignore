@@ -20,3 +20,6 @@ yarn-error.log
 storage/app/admin_firebase.json
 storage/app/manager_firebase.json
 storage/app/volunteer_firebase.json
+/storage/logs
+/storage/framework
+/storage/app/public

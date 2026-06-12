@@ -8,6 +8,7 @@ use App\Http\Controllers\courseController;
 use App\Http\Controllers\IndicatorController;
 use App\Http\Controllers\IndicatorGeneratorController;
 use App\Http\Controllers\KPIController;
+use App\Http\Controllers\evaluationTaskController;
 use App\Http\Controllers\PointTransactionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -113,6 +114,7 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
     Route::get('volunteerAttendances', [AttendanceController::class, 'volunteerAttendances']);
     Route::post('attendance/scan-qr', [AttendanceController::class, 'scanVolunteerQr']);
     //قسم المتطوعين
+    Route::get('top-volunteers', [UserController::class, 'getTopVolunteers']);
 
     Route::get('getVoulnteer', [UserController::class, 'getVoulnteer']);
     Route::post('showVolunteer/{id}', [UserController::class, 'showVolunteer']);
@@ -181,6 +183,8 @@ Route::get('complaints/{id}', [ComplaintController::class, 'show'])
 Route::post('/update-device-token', [DeviceTokenController::class, 'updateDeviceToken']);
 
 Route::get('/my-notifications', [VolunteerRequestController::class, 'getMyNotifications']);
-
+////////////موظف المرااقبة والتقييم 
+Route::get('evaluation-my-tasks',[evaluationTaskController::class, 'myTasks']
+);
 
 });

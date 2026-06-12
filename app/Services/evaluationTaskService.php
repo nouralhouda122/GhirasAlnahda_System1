@@ -85,4 +85,21 @@ class evaluationTaskService
             'code'    => 200
         ];
     }
+
+
+
+public function getMyTasks($userId): array
+{
+    $tasks = $this->taskRepository->getByEvaluator($userId);
+
+    return [
+        'data' => evaluationTaskResourses::collection($tasks),
+        'message' => 'Your evaluation tasks retrieved successfully.',
+        'code' => 200
+    ];
+}
+
+
+
+
 }

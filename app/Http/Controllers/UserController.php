@@ -166,6 +166,37 @@ class UserController extends Controller
            return ResponseHelper::Error($data['user'], $data['message'], $data['code']);
         }
     }
+    public function getTopVolunteers()
+{
+    try {
+        $topVolunteers = \App\Models\User::role('volunteer')  
+            ->withSum('receivedPoints as total_points', 'points')
+            ->with('volunteerProfile') 
+            ->orderByDesc('total_points')
+            ->take(5)
+            ->get()
+            ->map(function ($user) {
+                return [
+                    
+                    'volunteer_profile_id' => $user->volunteerProfile ? $user->volunteerProfile->id : null,
+                    'name'                 => $user->name,
+                    'total_points'         => (int) ($user->total_points ?? 0),
+                    'status'               => $user->status ?? 'unknown',
+                ];
+            });
 
+        return response()->json([
+            'success' => true,
+            'data'    => $topVolunteers
+        ], 200);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success'     => false,
+            'message'     => 'An error occurred while retrieving data. Please try again later',
+            'error_debug' => config('app.debug') ? $e->getMessage() : null
+        ], 500);
+    }
+}
 
 }

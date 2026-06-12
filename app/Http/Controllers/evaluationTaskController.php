@@ -54,4 +54,28 @@ class evaluationTaskController extends Controller
             return ResponseHelper::Error([], 'حدث خطأ أثناء جلب مهام التقييم: ' . $e->getMessage(), 500);
         }
     }
+
+public function myTasks(): JsonResponse
+{
+    try {
+        $data = $this->taskService->getMyTasks(auth()->id());
+
+        return ResponseHelper::Success(
+            $data['data'],
+            $data['message'],
+            200
+        );
+
+    } catch (\Exception $e) {
+
+        return ResponseHelper::Error(
+            [],
+            'Failed to retrieve your tasks: '.$e->getMessage(),
+            500
+        );
+    }
+}
+
+
+
 }
