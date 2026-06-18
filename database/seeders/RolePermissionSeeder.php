@@ -1,43 +1,32 @@
 <?php
-
 namespace Database\Seeders;
-
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
-
 class RolePermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        // =====================
-        // ROLES + DEPARTMENTS
-        // =====================
-
         // Campaign Department (1)
         $campaignManager = Role::firstOrCreate([
             'name' => 'Campaign Manager',
             'department_id' => 1
         ]);
-
         $campaignEmployee = Role::firstOrCreate([
             'name' => 'Campaign Employee',
             'department_id' => 1
         ]);
-
         $teamLeader = Role::firstOrCreate([
             'name' => 'Team Leader',
             'department_id' => 1
         ]);
-
         $volunteerManager = Role::firstOrCreate([
             'name' => 'Volunteer Manager',
             'department_id' => 1
         ]);
 
-        // Monitoring / Evaluation Department (2)
         $evaluationManager = Role::firstOrCreate([
             'name' => 'Evaluation Manager',
             'department_id' => 2

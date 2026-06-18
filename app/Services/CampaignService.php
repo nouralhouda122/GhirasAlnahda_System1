@@ -21,8 +21,7 @@ class CampaignService
         CampaingRepository $CampaignRepository,
         KPIBrain $KPIBrain,
         IndicatorMatchingService $indicatorService,
-        UserService   $userService,
-           FcmNotificationService $fcmService
+           FcmNotificationService $fcmService,
         userRepository   $userService
     ) {
         $this->CampaignRepository = $CampaignRepository;
