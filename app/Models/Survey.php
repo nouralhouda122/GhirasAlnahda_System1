@@ -32,4 +32,8 @@ class Survey extends Model
             SurveyAnswer::class
         );
     }
+    public function evaluationTasks()
+    {
+        return $this->hasMany(EvaluationTask::class);
+    }
 }

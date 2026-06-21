@@ -2,7 +2,7 @@
 
 
 namespace App\Repositories;
-
+use Illuminate\Support\Facades\Cache;
 
 use App\Models\Campaign;
 use App\Models\Campaign_kpi;
@@ -39,10 +39,17 @@ class CampaingRepository
         return Campaign::where('id',$id)->exists();
     }
 
-    public function index()
-    {
+    // public function index()
+    // {
+    //     return Campaign::all();
+    // }
+//الدالة بعد ما طبقنا الكاش 
+public function index()
+{
+    return Cache::remember('all_campaigns', now()->addMinutes(10), function () {
         return Campaign::all();
-    }
+    });
+}
 
     public function indexWithRelation($id)
     {

@@ -77,5 +77,71 @@ public function myTasks(): JsonResponse
 }
 
 
+// أضيفي هذه الدوال داخل كلاس evaluationTaskController
+
+/**
+ * واجهة جلب أسئلة الاستبيان الخاص بمهمة محددة
+ */
+public function getQuestions($id): JsonResponse
+{
+    try {
+        $data = $this->taskService->getTaskSurveyQuestions($id, auth()->id());
+
+        if ($data['code'] === 200) {
+            return ResponseHelper::Success($data['data'], $data['message'], 200);
+        }
+
+        return ResponseHelper::Error($data['data'] ?? [], $data['message'], $data['code']);
+    } catch (Exception $e) {
+        return ResponseHelper::Error([], 'Failed to retrieve survey questions: ' . $e->getMessage(), 500);
+    }
+}
+
+/**
+ * واجهة استقبال الإجابات وإغلاق المهمة
+ */
+public function submitAnswers(\Illuminate\Http\Request $request, $id): JsonResponse
+{
+    // عمل Validation سريع للإجابات للتأكد من بنية الـ Array القادمة
+    $request->validate([
+        'answers'                      => 'required|array',
+        'answers.*.survey_question_id' => 'required|exists:survey_questions,id',
+        'answers.*.answer'             => 'required|string',
+    ]);
+
+    try {
+        $data = $this->taskService->submitTaskAnswers($id, $request->answers, auth()->id());
+
+        if ($data['code'] === 200) {
+            return ResponseHelper::Success($data['data'], $data['message'], 200);
+        }
+
+        return ResponseHelper::Error($data['data'] ?? [], $data['message'], $data['code']);
+    } catch (Exception $e) {
+        return ResponseHelper::Error([], 'Failed to submit survey answers: ' . $e->getMessage(), 500);
+    }
+}
+
+/**
+ * واجهة تغيير حالة المهمة من قبل الموظف
+ */
+public function updateStatus(\Illuminate\Http\Request $request, $id): JsonResponse
+{
+    $request->validate([
+        'status' => 'required|string|in:pending,in_progress,completed',
+    ]);
+
+    try {
+        $data = $this->taskService->updateTaskStatus($id, $request->status, auth()->id());
+
+        if ($data['code'] === 200) {
+            return ResponseHelper::Success($data['data'], $data['message'], 200);
+        }
+
+        return ResponseHelper::Error($data['data'] ?? [], $data['message'], $data['code']);
+    } catch (Exception $e) {
+        return ResponseHelper::Error([], 'Failed to update task status: ' . $e->getMessage(), 500);
+    }
+}
 
 }

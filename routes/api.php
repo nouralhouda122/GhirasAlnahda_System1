@@ -8,6 +8,7 @@ use App\Http\Controllers\courseController;
 use App\Http\Controllers\IndicatorController;
 use App\Http\Controllers\IndicatorGeneratorController;
 use App\Http\Controllers\KPIController;
+use App\Http\Controllers\TeamRequestController;
 use App\Http\Controllers\evaluationTaskController;
 use App\Http\Controllers\PointTransactionController;
 use App\Http\Controllers\RoleController;
@@ -157,7 +158,11 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
     Route::get('/my-card', [VolunteerRequestController::class, 'getMyIDCard']);
     Route::get('top-volunteers', [UserController::class, 'getTopVolunteers']);
     Route::post('campaignsjoin/{campaignId}', [CampaignController::class, 'joinCampaign']);
+//////تطوع للحملة ك فريق   Route::post('/team-request', [TeamRequestController::class, 'create']);
+  Route::post('team-request', [TeamRequestController::class, 'create']);
+    Route::post('team-request-accept/{id}', [TeamRequestController::class, 'accept']);
 
+    Route::post('team-request-reject/{id}', [TeamRequestController::class, 'reject']);
     Route::get('showMyCampanig', [CampaignController::class, 'showMyCampanig']);
 
     /////////////////////Complaint with Raya heeeeeeeeheeeee
@@ -184,7 +189,8 @@ Route::post('/update-device-token', [DeviceTokenController::class, 'updateDevice
 
 Route::get('/my-notifications', [VolunteerRequestController::class, 'getMyNotifications']);
 ////////////موظف المرااقبة والتقييم 
-Route::get('evaluation-my-tasks',[evaluationTaskController::class, 'myTasks']
-);
-
+Route::get('evaluation-my-tasks',[evaluationTaskController::class, 'myTasks']);    
+Route::get('evaluation-tasks-questions/{id}', [evaluationTaskController::class, 'getQuestions']);
+Route::post('evaluation-tasks-submit/{id}', [evaluationTaskController::class, 'submitAnswers']);
+Route::post('evaluation-tasks-status/{id}', [evaluationTaskController::class, 'updateStatus']);
 });

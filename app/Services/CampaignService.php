@@ -49,7 +49,7 @@ class CampaignService
                     // 🔥 Step 1
                     $analysis = $this->KPIBrain->analyze($goalText);
 
-                    $kpi = $this->CampaignRepository->createCampaing_Kpi([
+                     $kpi = $this->CampaignRepository->createCampaing_Kpi([
                         'campaign_id' => $campaign->id,
                         'goal_text' => $goalText,
                         'domain' => $analysis['domain'],
@@ -187,105 +187,114 @@ class CampaignService
 /**
  * انضمام المتطوع النشط إلى حملة مباشرة طالما المقاعد متاحة - Clean Code
  */
-    public function joinCampaign(int $campaignId)
-    {
-        $user = auth()->user();
-        /** @var \App\Models\User $user */
+public function joinCampaign(int $campaignId)
+{
+    $user = auth()->user();
+    /** @var \App\Models\User $user */
 
-        // 1. Check if user has an active volunteer profile
-        if (!$user->volunteerProfile || (int) $user->volunteerProfile->is_active !== 1) {
-            return [
-                'user' => null,
-                'message' => 'Your volunteer account must be active to join campaigns.',
-                'code' => 403
-            ];
-        }
+    if (!$user->volunteerProfile || (int) $user->volunteerProfile->is_active !== 1) {
+        return [
+            'user' => null,
+            'message' => 'Your volunteer account must be active to join campaigns.',
+            'code' => 403
+        ];
+    }
 
-        $volunteerProfileId = $user->volunteerProfile->id;
+    try {
 
-        try {
-            return DB::transaction(function () use ($campaignId, $volunteerProfileId, $user) {
+        return $this->registerVolunteerToCampaign(
+            $campaignId,
+            $user->volunteerProfile->id,
+            $user->id
+        );
 
-                // 2. Fetch campaign and lock row to prevent race conditions
-                $campaignWithLock = \App\Models\Campaign::lockForUpdate()->find($campaignId);
+    } catch (\Throwable $e) {
 
-                if (!$campaignWithLock) {
-                    return [
-                        'user' => null,
-                        'message' => 'The requested campaign was not found.',
-                        'code' => 404
-                    ];
-                }
+        Log::error('Campaign Direct Join Failed', [
+            'user_id' => $user->id,
+            'volunteer_profile_id' => $user->volunteerProfile->id,
+            'campaign_id' => $campaignId,
+            'error' => $e->getMessage()
+        ]);
 
-                // 3. Check campaign status (Must be approved or ongoing)
-                if (!in_array($campaignWithLock->status, ['approved', 'ongoing'])) {
-                    return [
-                        'user' => null,
-                        'message' => 'Registration for this campaign is currently unavailable.',
-                        'code' => 400
-                    ];
-                }
-
-                // 4. Check for duplicate registration
-                $alreadyJoined = DB::table('campaign_volunteer')
-                    ->where('volunteer_profile_id', $volunteerProfileId)
-                    ->where('campaign_id', $campaignId)
-                    ->exists();
-
-                if ($alreadyJoined) {
-                    return [
-                        'user' => null,
-                        'message' => 'You are already registered in this campaign.',
-                        'code' => 400
-                    ];
-                }
-
-                // 5. Check if campaign capacity is full
-                if ($campaignWithLock->current_volunteers >= $campaignWithLock->required_volunteers) {
-                    return [
-                        'user' => null,
-                        'message' => 'We are sorry, this campaign has reached its maximum volunteer capacity.',
-                        'code' => 400
-                    ];
-                }
-
-                // 6. Action: Insert into pivot table
-                DB::table('campaign_volunteer')->insert([
-                    'volunteer_profile_id' => $volunteerProfileId,
-                    'campaign_id'          => $campaignId,
-                    'status'               => 'approved',
-                    'created_at'           => now(),
-                    'updated_at'           => now(),
-                ]);
-
-                // 7. Increment current volunteers counter
-                $campaignWithLock->increment('current_volunteers');
-
-                return [
-                    'user' => true,
-                    'message' => 'You have successfully joined the campaign!',
-                    'code' => 200
-                ];
-            });
-
-        } catch (\Throwable $e) {
-            Log::error('Campaign Direct Join Failed', [
-                'user_id' => $user->id,
-                'volunteer_profile_id' => $volunteerProfileId,
-                'campaign_id' => $campaignId,
-                'error' => $e->getMessage()
-            ]);
-
-            return [
-                'user' => null,
-                'message' => 'An unexpected error occurred while processing your request: ' . $e->getMessage(),
-                'code' => 500
-            ];
-        }
-
+        return [
+            'user' => null,
+            'message' => 'An unexpected error occurred while processing your request.',
+            'code' => 500
+        ];
+    }
 }
 
+public function registerVolunteerToCampaign(
+    int $campaignId,
+    int $volunteerProfileId,
+    ?int $userId = null
+)
+{
+    return DB::transaction(function () use ($campaignId, $volunteerProfileId, $userId) {
 
+        // Fetch campaign and lock row to prevent race conditions
+        $campaignWithLock = \App\Models\Campaign::lockForUpdate()->find($campaignId);
+
+        if (!$campaignWithLock) {
+            return [
+                'user' => null,
+                'message' => 'The requested campaign was not found.',
+                'code' => 404
+            ];
+        }
+
+        // Check campaign status
+        if (!in_array($campaignWithLock->status, ['approved', 'ongoing'])) {
+            return [
+                'user' => null,
+                'message' => 'Registration for this campaign is currently unavailable.',
+                'code' => 400
+            ];
+        }
+
+        // Check duplicate
+        $alreadyJoined = DB::table('campaign_volunteer')
+            ->where('volunteer_profile_id', $volunteerProfileId)
+            ->where('campaign_id', $campaignId)
+            ->exists();
+
+        if ($alreadyJoined) {
+            return [
+                'user' => null,
+                'message' => 'You are already registered in this campaign.',
+                'code' => 400
+            ];
+        }
+
+        // Check capacity
+        if ($campaignWithLock->current_volunteers >= $campaignWithLock->required_volunteers) {
+            return [
+                'user' => null,
+                'message' => 'We are sorry, this campaign has reached its maximum volunteer capacity.',
+                'code' => 400
+            ];
+        }
+
+        // Insert
+        DB::table('campaign_volunteer')->insert([
+            'volunteer_profile_id' => $volunteerProfileId,
+            'campaign_id' => $campaignId,
+            'status' => 'approved',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Increment counter
+        $campaignWithLock->increment('current_volunteers');
+
+        return [
+            'user' => true,
+            'message' => 'You have successfully joined the campaign!',
+            'code' => 200
+        ];
+    });
+}
     public function showMyCampanig()
     {
         $user = auth()->user();

@@ -5,6 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 class EvaluationTask extends Model
 {
     use HasFactory;
+        protected $guarded=[];
     public function campaign()
     {
         return $this->belongsTo(Campaign::class);
@@ -17,7 +18,7 @@ class EvaluationTask extends Model
     {
         return $this->belongsTo(
             User::class,
-            'employee_id'
+            'evaluator_id'
         );
     }
 }

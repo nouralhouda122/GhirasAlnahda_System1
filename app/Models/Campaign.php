@@ -66,4 +66,8 @@ class Campaign extends Model
     public function goals() {
         return $this->belongsToMany(Campaign_kpi::class, 'goal_indicators');
     }
+    public function teamRequests()
+{
+    return $this->hasMany(TeamRequest::class);
+}
 }

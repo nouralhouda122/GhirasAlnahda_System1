@@ -23,5 +23,20 @@ public function user()
 {
     return $this->belongsTo(User::class, 'user_id');
 }
+public function createdTeamRequests()
+{
+    return $this->hasMany(
+        TeamRequest::class,
+        'creator_volunteer_profile_id'
+    );
+}
+
+public function teamInvitations()
+{
+    return $this->hasMany(
+        TeamRequestMember::class,
+        'volunteer_profile_id'
+    );
+}
 
 }
