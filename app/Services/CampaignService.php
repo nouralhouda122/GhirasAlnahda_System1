@@ -1,7 +1,6 @@
 <?php
 namespace App\Services;
 use App\Helpers\StorageHelper;
-use App\Http\Requests\ApprovalRequest;
 use App\Http\Requests\CampaingRequest;
 use App\Http\Requests\SearchCampaignRequest;
 use App\Http\Requests\SearchForPermissionsAndRolesRequest;
@@ -22,8 +21,8 @@ class CampaignService
         CampaingRepository $CampaignRepository,
         KPIBrain $KPIBrain,
         IndicatorMatchingService $indicatorService,
-        UserService   $userService,
-           FcmNotificationService $fcmService
+           FcmNotificationService $fcmService,
+        userRepository   $userService
     ) {
         $this->CampaignRepository = $CampaignRepository;
         $this->KPIBrain = $KPIBrain;
@@ -36,34 +35,51 @@ class CampaignService
         return DB::transaction(function () use ($request) {
 
             $data = $request->validated();
+
+            $images = $request->file('image') ?? $request->input('image');
+            $videos = $request->file('video') ?? $request->input('video');
+
             unset($data['image'], $data['video'], $data['goals']);
 
+            if ($request->hasFile('image')) {
+                $uploadedImages = [];
+                foreach ($request->file('image') as $file) {
+                    $uploadedImages[] = $file->store('campaigns', 'public');
+                }
+                $data['image'] = json_encode($uploadedImages);
+            } elseif (is_array($images)) {
+                $data['image'] = json_encode($images);
+            }
+
+            if ($request->hasFile('video')) {
+                $uploadedVideos = [];
+                foreach ($request->file('video') as $file) {
+                    $uploadedVideos[] = $file->store('campaigns_videos', 'public');
+                }
+                $data['video'] = json_encode($uploadedVideos);
+            } elseif (is_array($videos)) {
+                $data['video'] = json_encode($videos);
+            }
+
+            // إنشاء الحملة بالبيانات المحدثة التي تحتوي على روابط الصور والفيديو
             $campaign = $this->CampaignRepository->createCampaing($data);
 
             $results = [];
 
             if ($request->has_evaluation && !empty($request->goals)) {
-
                 foreach ($request->goals as $goalText) {
-
-                    // 🔥 Step 1
                     $analysis = $this->KPIBrain->analyze($goalText);
 
                      $kpi = $this->CampaignRepository->createCampaing_Kpi([
                         'campaign_id' => $campaign->id,
-                        'goal_text' => $goalText,
-                        'domain' => $analysis['domain'],
-                        'intent' => $analysis['intent'],
-                        'type' => $analysis['type'],
-                        'target_value' => $analysis['target_value'],
+                        'goal_text'   => $goalText,
+                        'domain'      => $analysis['domain'],
+                        'intent'      => $analysis['intent'],
+                        'type'        => $analysis['type'],
+                        'target_value'=> $analysis['target_value'],
                     ]);
 
-                    // 🔥 Step 2 + ربط المؤشرات
-                    $indicators = $this->indicatorService->generate(
-                        $analysis,
-                        $goalText,
-                        $kpi->id
-                    );
+                    $indicators = $this->indicatorService->generate($analysis, $goalText, $kpi->id);
 
                     $results[] = [
                         'goal' => $kpi,
@@ -90,13 +106,12 @@ class CampaignService
             
 
             return [
-                'user' => new CampaignDetailsResource($campaign),
+                'user' => new CampaignDetailsResource($campaign), // تأكد أن هذا الريسورس يقرأ الـ image بشكل صحيح
                 'message' => 'Campaign created successfully',
                 'code' => 201
             ];
         });
-    }
-    public function show()
+    }    public function show()
     {
         $campanig=$this->CampaignRepository->index();
         return (['user'=>  CampaignResource::collection($campanig),

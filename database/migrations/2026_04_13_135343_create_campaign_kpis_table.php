@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('campaign_id')->constrained()->cascadeOnDelete();
             $table->text('goal_text');
+            $table->decimal('weight', 5, 2)->default(1);
             $table->string('domain')->nullable();
             $table->string('intent')->nullable();
             $table->string('type')->nullable();

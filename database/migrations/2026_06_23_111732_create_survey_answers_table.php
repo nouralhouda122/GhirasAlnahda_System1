@@ -12,23 +12,17 @@ return new class extends Migration
             public function up(): void
             {
                 Schema::create('survey_answers', function (Blueprint $table) {
-
                     $table->id();
-                    $table->foreignId('survey_id')
-                        ->constrained()
-                        ->cascadeOnDelete();
                     $table->foreignId('survey_question_id')
                         ->constrained()
                         ->cascadeOnDelete();
                     $table->foreignId('user_id')
                         ->constrained()
                         ->cascadeOnDelete();
-                    $table->foreignId('campaign_id')
-                        ->constrained()
-                        ->cascadeOnDelete();
-                    $table->text('answer')->nullable();
-                    $table->timestamps();
-                    $table->index(['campaign_id', 'survey_id']);                });            }
+                    $table->text('answer')->nullable();                    $table->timestamps();
+
+                                  });            }
+
 
             public function down(): void
             {

@@ -17,6 +17,8 @@ class IndicatorMatchResource extends JsonResource
             'indicator_description' => $this->indicator?->description,
             'domain' => $this->indicator?->domain,
             'type' => $this->indicator?->type,
+            'target_value' => $this->target_value,
+
             'score' => round($this->score, 2),
             'status' => $this->approval_status,
         ];

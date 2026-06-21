@@ -23,7 +23,7 @@ class FcmNotificationService
     private function getMessagingInstance(string $appType)
     {
         try {
-           $configPath = config("firebase.credentials.$appType");
+            $configPath = config("firebase.credentials.$appType");
 
             if (!$configPath || !file_exists(base_path($configPath))) {
                 Log::error("Firebase config file not found for app type: {$appType} inside env path: {$configPath}");
@@ -57,7 +57,7 @@ class FcmNotificationService
 
         if (empty($tokens)) {
             Log::info("User {$user->id} has no registered tokens for app: {$targetApp}. Saved to database archive only.");
-            return true; 
+            return true;
         }
 
         // 3. بناء اتصال الفايربيز المخصص لهذا التطبيق
@@ -83,27 +83,27 @@ class FcmNotificationService
                 $success = true;
             } catch (Exception $e) {
 
-    Log::error(
-        "FCM Send Error for token {$token}: "
-        . $e->getMessage()
-    );
+                Log::error(
+                    "FCM Send Error for token {$token}: "
+                    . $e->getMessage()
+                );
 
-    if (
-        str_contains(
-            strtolower($e->getMessage()),
-            'registration-token-not-registered'
-        )
-    ) {
+                if (
+                str_contains(
+                    strtolower($e->getMessage()),
+                    'registration-token-not-registered'
+                )
+                ) {
 
-        DB::table('user_fcm_tokens')
-            ->where('fcm_token', $token)
-            ->delete();
+                    DB::table('user_fcm_tokens')
+                        ->where('fcm_token', $token)
+                        ->delete();
 
-        Log::info(
-            "Dead FCM token deleted: {$token}"
-        );
-    }
-}
+                    Log::info(
+                        "Dead FCM token deleted: {$token}"
+                    );
+                }
+            }
         }
 
         return $success;

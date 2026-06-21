@@ -5,13 +5,13 @@ namespace App\Http\Controllers;
 use App\Helpers\ResponseHelper;
 use App\Http\Requests\EmailVerificationRequest;
 use App\Http\Requests\LoginRequest;
+use App\Http\Requests\ResendVerificationRequest;
 use App\Http\Requests\UserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Services\UserService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Routing\Controller;
-use App\Http\Requests\ResendVerificationRequest;
 class AuthController extends Controller
 {
     protected $userService;
@@ -50,28 +50,9 @@ class AuthController extends Controller
 
 
 
-    
+
     ////اعادة ارسال رسالة التحقق
 
-    public function resendVerificationCode(
-    ResendVerificationRequest $request
-)
-{
-    $data = $this->userService
-        ->resendVerificationCode($request);
-
-    return ($data['code'] === 200)
-        ? ResponseHelper::Success(
-            $data['user'],
-            $data['message'],
-            $data['code']
-        )
-        : ResponseHelper::Error(
-            $data['user'],
-            $data['message'],
-            $data['code']
-        );
-}
 
     public function logout()
     {
@@ -85,6 +66,28 @@ class AuthController extends Controller
     }
 
 
-    
+
+    ////اعادة ارسال رسالة التحقق
+
+    public function resendVerificationCode(
+        ResendVerificationRequest $request
+    )
+    {
+        $data = $this->userService
+            ->resendVerificationCode($request);
+
+        return ($data['code'] === 200)
+            ? ResponseHelper::Success(
+                $data['user'],
+                $data['message'],
+                $data['code']
+            )
+            : ResponseHelper::Error(
+                $data['user'],
+                $data['message'],
+                $data['code']
+            );
+    }
+
 }
 

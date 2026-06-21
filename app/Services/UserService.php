@@ -20,10 +20,12 @@ use App\Repositories\RoleRepository;
 use App\Repositories\userRepository;
 use Carbon\Carbon;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\UserStatusMail;
+
 class UserService
 {
     use AuthorizesRequests;
@@ -125,7 +127,7 @@ class UserService
 
         $permissions = $user->getPermissionsViaRoles()->pluck('name')->toArray();
         $user->givePermissionTo($permissions);
-        
+
         $user = User::with('roles.permissions', 'permissions')->find($user->id);
         $user = $this->appendRolesAndPermission($user);
         $user['token'] = $user->createToken('token')->plainTextToken;
@@ -156,6 +158,9 @@ class UserService
             'code' => $code
         ];
     }
+
+
+
 
     public function assignDepartmentManager($departmentId, $userId)
     {
@@ -189,45 +194,6 @@ class UserService
         ];
     }
 
-    public function createUser(array $data): array
-    {
-        return DB::transaction(function () use ($data) {
-            $user = $this->userRepository->create_User($data);
-            $role = $this->roleRepository->findRoleByDepartment($data['department_id']);
-
-            if (!$role) {
-                return [
-                    'user' => null,
-                    'message' => 'Invalid role for this department',
-                    'code' => 422
-                ];
-            }
-
-            $user->assignRole($role->name);
-
-            if (str_contains(strtolower($role->name), 'manager')) {
-                $department = $this->departmentRepository->find($data['department_id']);
-
-                if (!$department) {
-                    return [
-                        'user' => null,
-                        'message' => 'Department not found',
-                        'code' => 404
-                    ];
-                }
-
-                $department->manager_id = $user->id;
-                $department->save();
-            }
-
-            return [
-                'user' => $user,
-                'message' => 'Success',
-                'code' => 200
-            ];
-        });
-    }
-
     private function appendRolesAndPermission($user)
     {
         $roles = $user->roles->pluck('name')->toArray();
@@ -240,8 +206,9 @@ class UserService
 
         return $user;
     }
-   
-  
+
+
+
     public function getVisibleUsers($Auth_user): array
     {
         // 1. جلب أدوار المستخدم الحالي كمصفوفة نصوص لتجنب مشاكل الـ Guard
@@ -419,7 +386,7 @@ class UserService
         ];
 
         $user = $this->userRepository->updateStatusUser($data, $user);
-      
+
         if ($user->status === 'banned') {
 
             Mail::to($user->email)->send(
@@ -438,6 +405,7 @@ class UserService
         )
     );
 }
+
         return [
             'user' => new UserResource($user),
             'message' => $user->status === 'banned' ? 'User banned successfully' : 'User activated successfully',
@@ -487,5 +455,63 @@ class UserService
             'message' => 'Verification code sent successfully',
             'code' => 200
         ];
+    }
+
+    public function createUser(array $data): array
+    {
+        return DB::transaction(function () use ($data) {
+            $user = $this->userRepository->create_User($data);
+          //  $role = $this->roleRepository->findRoleByDepartment($data['department_id']);
+
+         //   if (!$role) {
+         //       return [
+               //     'user' => null,
+              //      'message' => 'Invalid role for this department',
+            //        'code' => 422
+          //      ];
+        //    }
+
+            $user->assignRole($data['role']);
+
+         //   if (str_contains(strtolower($role->name), 'manager')) {
+              //  $department = $this->departmentRepository->find($data['department_id']);
+
+              //  if (!$department) {
+              //      return [
+               //         'user' => null,
+               //         'message' => 'Department not found',
+              //          'code' => 404
+
+               // }
+
+             //   $department->manager_id = $user->id;
+           //     $department->save();
+          //  }
+
+            return [
+                'user' => $user,
+                'message' => 'Success',
+                'code' => 200
+            ];
+        });
+    }
+
+
+    public function searchVolunteer(searchUserRequest $request)
+    {
+        $user = $this->userRepository->searchVolunteer($request);
+
+        return [
+            'users' => UserResource::collection($user),
+            'meta' => [
+                'current_page' => $user->currentPage(),
+                'last_page' => $user->lastPage(),
+                'per_page' => $user->perPage(),
+                'total' => $user->total(),
+            ],
+            'message' => 'Users retrieved successfully',
+            'code' => 200
+        ];
+
     }
 }

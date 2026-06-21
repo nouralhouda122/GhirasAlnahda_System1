@@ -89,10 +89,10 @@ class User extends Authenticatable
 
 
     /**
- * جلب جميع توكنات الأجهزة الخاصة بالمستخدم (تعدد الأجهزة)
- */
-public function fcmTokens()
-{
-    return $this->hasMany(UserFcmToken::class, 'user_id');
-}
+     * جلب جميع توكنات الأجهزة الخاصة بالمستخدم (تعدد الأجهزة)
+     */
+    public function fcmTokens()
+    {
+        return $this->hasMany(UserFcmToken::class, 'user_id');
+    }
 }

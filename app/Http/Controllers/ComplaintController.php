@@ -40,9 +40,6 @@ class ComplaintController extends Controller
         ], 200);
     }
 
-    /**
-     * 3. POST /api/complaints (إضافة شكوى من قبل المتطوع/المستخدم)
-     */
     public function store(StoreComplaintRequest $request): JsonResponse
     {
         $complaint = $this->complaintService->storeComplaint(
@@ -58,9 +55,6 @@ class ComplaintController extends Controller
         ], 201);
     }
 
-    /**
-     * 4. PUT/PATCH /api/complaints/{id}/review (الـ API الناقص: رد المسؤول وتغيير الحالة)
-     */
     public function review(Request $request, int $id): JsonResponse
     {
         $request->validate([

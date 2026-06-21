@@ -208,15 +208,15 @@ class AttendanceService
         }
 
         return [
-            'user' => ApprovalRequestResource::collection($attendances),
+            'user' => AttendanceResource::collection($attendances),
             'message' => 'success',
             'code' => 200
         ];
     }
-    
-    ///////راية 
- 
-    
+
+    ///////راية
+
+
     public function scanVolunteerQr($request)
     {
         $currentUser = Auth::user();
@@ -250,7 +250,7 @@ class AttendanceService
             ->where('volunteer_profile_id', $profile->id)
             ->where('status', 'approved')
             ->exists();
-        
+
         if (!$isVolunteerApprovedInCampaign) {
             return ['code' => 400, 'message' => 'This volunteer is not approved or registered in this campaign.', 'data' => null];
         }
@@ -295,5 +295,5 @@ class AttendanceService
             'data'    => new AttendanceResource($activeSession->fresh(['volunteer', 'campaign']))
         ];
     }
-    
+
     }

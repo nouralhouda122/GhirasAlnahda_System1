@@ -1,4 +1,7 @@
 <?php
+
+use App\Http\Controllers\CampaignEvaluationController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeviceTokenController;
 use App\Http\Controllers\ApprovalRequestController;
 use App\Http\Controllers\AttendanceController;
@@ -10,6 +13,7 @@ use App\Http\Controllers\IndicatorGeneratorController;
 use App\Http\Controllers\KPIController;
 use App\Http\Controllers\TeamRequestController;
 use App\Http\Controllers\evaluationTaskController;
+use App\Http\Controllers\MonitoringGoalController;
 use App\Http\Controllers\PointTransactionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -91,7 +95,6 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
     Route::get('indexAllCourses', [\App\Http\Controllers\courseController::class, 'index']);
     Route::post('indexDetailCourse/{id}', [\App\Http\Controllers\courseController::class, 'show']);
     Route::post('courses/enroll/{id}', [CourseController::class, 'store']);
-    //كورسات خاص بالمتطوع راية
     Route::get('showMyCourses', [CourseController::class, 'showMyCourses']);
 
 //قسم  ادارة المستخدمين
@@ -101,6 +104,8 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
     Route::post('searchUser', [UserController::class, 'searchUser']);
     Route::post('searchUserByName', [UserController::class, 'searchUser']);
     Route::post('searchUserByRole', [UserController::class, 'searchUser']);
+        Route::post('searchVolunteer', [UserController::class, 'searchVolunteer']);
+
     Route::get('ShowAllRoles', [UserController::class, 'ShowAllRoles']);
 
         Route::put('updateStatusUser/{id}', [UserController::class, 'updateStatusUser']);
@@ -116,7 +121,6 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
     Route::post('attendance/scan-qr', [AttendanceController::class, 'scanVolunteerQr']);
     //قسم المتطوعين
     Route::get('top-volunteers', [UserController::class, 'getTopVolunteers']);
-
     Route::get('getVoulnteer', [UserController::class, 'getVoulnteer']);
     Route::post('showVolunteer/{id}', [UserController::class, 'showVolunteer']);
 //طلبات موافقة
@@ -128,17 +132,26 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
     Route::post('indexAllGoals/{id}', [\App\Http\Controllers\MonitoringGoalController::class, 'index']);
     Route::post('showIndicatorsForGoals/{id}', [\App\Http\Controllers\MonitoringGoalController::class, 'show']);
     Route::post('updateStatusIndicator/{goal_id}/{indicator_id}', [\App\Http\Controllers\MonitoringGoalController::class, 'updateStatus']);
-    Route::post('showSurveyByStage/{id}',
-        [\App\Http\Controllers\CampaignSurveyController::class, 'show']);
+    Route::post('showSurveyByStage/{id}', [\App\Http\Controllers\CampaignSurveyController::class, 'show']);
     Route::post('addQuestionToSurvey/{id}', [\App\Http\Controllers\CampaignSurveyController::class, 'addQuestionToSurvey']);
     Route::post('updateQuestionToSurvey/{survey_id}/{question_id}', [\App\Http\Controllers\CampaignSurveyController::class, 'updateQuestionToSurvey']);
     Route::post('DeleteQuestionToSurvey/{survey_id}/{question_id}', [\App\Http\Controllers\CampaignSurveyController::class, 'DeleteQuestionToSurvey']);
     Route::delete('deleteQuestionToSurvey/{survey_id}/{question_id}', [\App\Http\Controllers\CampaignSurveyController::class, 'deleteQuestionToSurvey']);
     Route::post('approveSurvey/{survey_id}', [\App\Http\Controllers\CampaignSurveyController::class, 'approveSurvey']);
     Route::post('showBySurveyId/{survey_id}', [\App\Http\Controllers\CampaignSurveyController::class, 'showBySurveyId']);
+    Route::get('/campaigns/{campaign}', [CampaignEvaluationController::class, 'dashboard']);
+    Route::get('/showResultIndicators/{campaign_id}/{indicator_id}', [MonitoringGoalController::class, 'showResultIndicators']);
+    Route::post('setWeight', [MonitoringGoalController::class, 'setWeight']);
+    Route::post('setTargetValue', [MonitoringGoalController::class, 'setTargetValue']);
+
+
+
+
+
 
 ////////////////////////////taskEvaluation
-    Route::post('storeEvaluationTask', [\App\Http\Controllers\evaluationTaskController::class, 'store']);
+    Route::post('storeEvaluationTask',
+        [\App\Http\Controllers\evaluationTaskController::class, 'store']);
     Route::get('indexAllEvaluationTask', [\App\Http\Controllers\evaluationTaskController::class, 'index']);
 
 
@@ -184,7 +197,7 @@ Route::post('complaintsreview/{id}', [ComplaintController::class, 'review']);
 // show single (لازم يكون آخر شيء)
 Route::get('complaints/{id}', [ComplaintController::class, 'show'])
     ->whereNumber('id');
-///قسم الاشعارات 
+///قسم الاشعارات
 Route::post('/update-device-token', [DeviceTokenController::class, 'updateDeviceToken']);
 
 Route::get('/my-notifications', [VolunteerRequestController::class, 'getMyNotifications']);
