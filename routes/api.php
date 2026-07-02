@@ -29,7 +29,7 @@ use App\Services\KPIExtractorService;
 use App\Services\KpiUnderstandingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
+ 
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -104,11 +104,10 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
     Route::post('searchUser', [UserController::class, 'searchUser']);
     Route::post('searchUserByName', [UserController::class, 'searchUser']);
     Route::post('searchUserByRole', [UserController::class, 'searchUser']);
-        Route::post('searchVolunteer', [UserController::class, 'searchVolunteer']);
-
+    Route::post('searchVolunteer', [UserController::class, 'searchVolunteer']);
     Route::get('ShowAllRoles', [UserController::class, 'ShowAllRoles']);
 
-        Route::put('updateStatusUser/{id}', [UserController::class, 'updateStatusUser']);
+     Route::put('updateStatusUser/{id}', [UserController::class, 'updateStatusUser']);
 
     Route::get('showPointForUser', [PointTransactionController::class, 'showPointForUser']);
     Route::post('showPointForVolunteer/{id}', [PointTransactionController::class, 'showPointForVolunteer']);
@@ -145,10 +144,6 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
     Route::post('setTargetValue', [MonitoringGoalController::class, 'setTargetValue']);
 
 
-
-
-
-
 ////////////////////////////taskEvaluation
     Route::post('storeEvaluationTask',
         [\App\Http\Controllers\evaluationTaskController::class, 'store']);
@@ -171,7 +166,9 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
     Route::get('/my-card', [VolunteerRequestController::class, 'getMyIDCard']);
     Route::get('top-volunteers', [UserController::class, 'getTopVolunteers']);
     Route::post('campaignsjoin/{campaignId}', [CampaignController::class, 'joinCampaign']);
+    
 //////تطوع للحملة ك فريق   Route::post('/team-request', [TeamRequestController::class, 'create']);
+  Route::get('available-volunteers/{campaign_id}', [TeamRequestController::class, 'getAvailableVolunteers']);
   Route::post('team-request', [TeamRequestController::class, 'create']);
     Route::post('team-request-accept/{id}', [TeamRequestController::class, 'accept']);
 

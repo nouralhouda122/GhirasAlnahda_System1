@@ -69,4 +69,18 @@ class Campaign extends Model
             Campaign_kpi::class,
             'campaign_id'
         );
-    }}
+    }
+    public function volunteerProfiles()
+{
+    return $this->belongsToMany(
+        VolunteerProfile::class,
+        'campaign_volunteer',
+        'campaign_id',
+        'volunteer_profile_id'
+    )
+    ->withPivot('status')
+    ->withTimestamps();
+}
+    
+    
+    }

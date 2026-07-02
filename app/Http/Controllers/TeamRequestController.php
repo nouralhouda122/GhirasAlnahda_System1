@@ -28,4 +28,12 @@ class TeamRequestController extends Controller
     {
         return response()->json($this->service->rejectInvitation($id));
     }
+    public function getAvailableVolunteers($campaign_id)
+{
+    return response()->json([
+        'status' => 1,
+        'data' => $this->service->getAvailableVolunteersForTeam($campaign_id),
+        'message' => 'Available volunteers retrieved successfully without conflicts.'
+    ]);
+}
 }
