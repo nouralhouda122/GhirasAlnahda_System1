@@ -73,7 +73,7 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
     //ادارة الاقسام
     Route::post('storeDepartment', [DepartmentController::class, 'store']);
     Route::get('showAllDepartment', [DepartmentController::class, 'index']);
-    Route::post('addEmployee', [UserController::class, 'addUser']);
+    Route::post(' ', [UserController::class, 'addUser']);
         Route::post('assignDepartmentManager/{id}/{user_id}', [UserController::class, 'assignDepartmentManager']);
     //ادارة الادوار
     Route::get('getRoleNames', [RoleController::class, 'getRoleNames']);
@@ -105,7 +105,7 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
     Route::get('showMyCourses', [CourseController::class, 'showMyCourses']);
 
 //قسم  ادارة المستخدمين
-    Route::get('showAllUsers', [UserController::class, 'showAllEmployeeCampanig']);
+    Route::get('showAllUsers', [UserController::class, 'showAllEmployee']);
     Route::post('UpdateUser/{id}', [UserController::class, 'UpdateEmployee']);
     Route::post('ShowdetailUser/{id}', [UserController::class, 'ShowdetailEmployee']);
     Route::post('searchUser', [UserController::class, 'searchUser']);
@@ -113,12 +113,11 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
     Route::post('searchUserByRole', [UserController::class, 'searchUser']);
         Route::post('searchVolunteer', [UserController::class, 'searchVolunteer']);
 
+        
     Route::get('ShowAllRoles', [UserController::class, 'ShowAllRoles']);
         Route::put('updateStatusUser/{id}', [UserController::class, 'updateStatusUser']);
-
     Route::get('showPointForUser', [PointTransactionController::class, 'showPointForUser']);
         Route::post('addPonus', [PointTransactionController::class, 'addPonus']);
-
     Route::post('showPointForVolunteer/{id}', [PointTransactionController::class, 'showPointForVolunteer']);
 //فسم الحضور
     Route::post('leaderCheckIn/{id}', [AttendanceController::class, 'leaderCheckIn']);

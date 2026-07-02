@@ -17,16 +17,15 @@ class DepartmentRolePermissionRepository
         )->delete();
     }
 
-    public function findById(
-        $departmentRole,$permission_id
-    ) {
-
-        return DepartmentRolePermission::where('department_role_id', $departmentRole)
-            ->where('permission_id',$permission_id)
+    public function findById($departmentRole, $permission_id)
+    {
+        return DepartmentRolePermission::where(
+            'department_role_id',
+            $departmentRole->id
+        )
+            ->where('permission_id', $permission_id)
             ->first();
-    }
-
-    public function create(array $array)
+    }    public function create(array $array)
     {
 
     }

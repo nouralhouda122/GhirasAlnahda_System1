@@ -154,10 +154,10 @@ class PermissionServices
 
     }
 
-    public function deletePermissionForRole($department_id,$role_id, $permission_id)
+    public function deletePermissionForRole($department_id, $role_id, $permission_id)
     {
         $departmentRole = $this->departmentRoleRepository
-            ->findByDepartmentAndRole($department_id,$role_id);
+            ->findByDepartmentAndRole($department_id, $role_id);
 
         if (!$departmentRole) {
             return [
@@ -166,19 +166,26 @@ class PermissionServices
                 'code' => 404
             ];
         }
-        $permission=$this->departmentRolePermissionRepository->findById($departmentRole,$permission_id);
+
+        $permission = $this->departmentRolePermissionRepository
+            ->findById($departmentRole, $permission_id);
+
+        if (!$permission) {
+            return [
+                'data' => null,
+                'message' => 'Permission not found',
+                'code' => 404
+            ];
+        }
+
+        $permission->delete();
+
         return [
-            'data' => $permission,
-            'message' => ' the permission deleted successfully',
+            'data' => null,
+            'message' => 'The permission deleted successfully',
             'code' => 200
         ];
-
-
-
-
-
-}
-
+    }
     public function search(\App\Http\Requests\SearchForPermissionsAndRolesRequest $request)
     {
         $permissions = $this->permissionRepository->search($request);
