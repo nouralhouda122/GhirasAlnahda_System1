@@ -3,7 +3,7 @@ namespace App\Http\Controllers;
 use App\Helpers\ResponseHelper;
 use App\Http\Requests\ApprovalStatusRequest;
 use App\Http\Requests\AttendanceRequest;
-use App\Http\Requests\CampaingRequest;
+use App\Http\Requests\UpdateCampanigRequest;
 use App\Services\ApprovalRequestService;
 use App\Services\AttendanceService;
 use App\Services\UserService;

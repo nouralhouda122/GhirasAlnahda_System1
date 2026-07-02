@@ -19,12 +19,12 @@ return new class extends Migration
             $table->string('password')->nullable();
             $table->string('ban_reason')->nullable();
             $table->date('banned_until')->nullable();
-
             $table->enum('status', [
                 'active',
                 'banned',
                 'suspended',
-            ])->default('active');            $table->string('phone')->nullable()->unique();
+            ])->default('active');
+            $table->string('phone')->nullable()->unique();
             $table->string('image')->nullable();
             $table->rememberToken();
             $table->timestamps();

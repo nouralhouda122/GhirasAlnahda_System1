@@ -72,11 +72,12 @@ class CampaingRepository
     {
         return Campaign::find($id);
     }
-    public function update(array $array,$campaign)
+    public function update(array $data, $campaign)
     {
-        $campaign->update($array);
-    }
+        $campaign->update($data);
 
+        return $campaign->fresh();
+    }
     public function indexForEvaulation()
     {
         return Campaign::where('has_evaluation',1)->get();

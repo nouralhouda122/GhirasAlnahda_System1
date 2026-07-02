@@ -14,13 +14,8 @@ class userRepository
 
     public function create(array $data): User
     {
-        return User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-            'phone' => $data['phone'],
-            'email_verified_at' => null,
-        ]);
+        return User::create($data
+        );
     }
     public function create_instructor(array $data): User
     {
@@ -135,4 +130,5 @@ class userRepository
             return $query->paginate(10);
         });
 }
-}
+
+    }

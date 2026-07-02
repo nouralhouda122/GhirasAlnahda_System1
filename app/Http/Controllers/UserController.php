@@ -87,7 +87,6 @@ class UserController extends Controller
 
     public function addUser(addUserRequest $request)
     {
-        $this->authorize('create', [User::class, $request->role]);
         $data = $this->userService->createUser($request->validated());
 
         if ($data['code'] === 200) {
@@ -96,7 +95,8 @@ class UserController extends Controller
 
         return ResponseHelper::Error($data['user'], $data['message'], $data['code']);
     }
-    public function showAllEmployeeCampanig(  ){
+
+    public function showAllEmployee(  ){
         $data=$this->userService->getVisibleUsers(Auth::user());
         if ($data['code'] === 200) {
             return ResponseHelper::Success($data['user'], $data['message'], $data['code']);
@@ -179,15 +179,15 @@ class UserController extends Controller
     public function getTopVolunteers()
 {
     try {
-        $topVolunteers = \App\Models\User::role('volunteer')  
+        $topVolunteers = \App\Models\User::role('volunteer')
             ->withSum('receivedPoints as total_points', 'points')
-            ->with('volunteerProfile') 
+            ->with('volunteerProfile')
             ->orderByDesc('total_points')
             ->take(5)
             ->get()
             ->map(function ($user) {
                 return [
-                    
+
                     'volunteer_profile_id' => $user->volunteerProfile ? $user->volunteerProfile->id : null,
                     'name'                 => $user->name,
                     'total_points'         => (int) ($user->total_points ?? 0),

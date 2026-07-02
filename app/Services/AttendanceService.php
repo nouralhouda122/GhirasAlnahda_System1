@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Services;
-
 use App\Http\Requests\AttendanceRequest;
 use App\Http\Resources\ApprovalRequestResource;
 use App\Http\Resources\PointTransactionResources;
@@ -14,15 +13,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\VolunteerProfile;
 use App\Http\Resources\AttendanceResource;
-
-
 class AttendanceService
 {
-
-
-
-
-
     public function __construct(
         CampaingRepository $CampaingRepository,
         AttendanceRepository $atendanceRepository,
@@ -32,7 +24,6 @@ class AttendanceService
         $this->atendanceRepository = $atendanceRepository;
         $this->pointTransactionRepository = $pointTransactionRepository;
     }
-
     public function leaderCheckIn(AttendanceRequest $request, $id)
     {
         return DB::transaction(function () use ($request, $id) {

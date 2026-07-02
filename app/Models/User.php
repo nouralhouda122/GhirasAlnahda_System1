@@ -85,9 +85,17 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-
-
-
+    public function hasPermission($permissionName)
+    {
+        return $this->departmentRole
+            ->permissions()
+            ->where('name', $permissionName)
+            ->exists();
+    }
+    public function departmentRole()
+    {
+        return $this->belongsTo(DepartmentRole::class);
+    }
     /**
      * جلب جميع توكنات الأجهزة الخاصة بالمستخدم (تعدد الأجهزة)
      */

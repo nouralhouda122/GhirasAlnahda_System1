@@ -6,15 +6,20 @@ namespace App\Services;
 
 use App\Http\Requests\searchUserRequest;
 use App\Http\Resources\UserResource;
+use App\Repositories\DepartmentRolePermissionRepository;
+use App\Repositories\DepartmentRoleRepository;
 use App\Repositories\PermissionRepository;
 use App\Repositories\RoleRepository;
 
 class PermissionServices
 {
-    public function __construct(PermissionRepository $permissionRepository,RoleRepository $roleRepository)
+    public function __construct(DepartmentRolePermissionRepository $departmentRolePermissionRepository,
+                                DepartmentRoleRepository $departmentRoleRepository, PermissionRepository $permissionRepository, RoleRepository $roleRepository)
     {
         $this->permissionRepository = $permissionRepository;
         $this->roleRepository = $roleRepository;
+        $this->departmentRoleRepository = $departmentRoleRepository;
+        $this->departmentRolePermissionRepository = $departmentRolePermissionRepository;
 
     }
 
@@ -29,27 +34,28 @@ class PermissionServices
             'code' => 200
         ];
     }
-    public function getAllPermissionsForRole($id)
+    public function getAllPermissionsForRoleInDepartment($departmentId, $roleId): array
     {
-        $role=$this->roleRepository->findById($id);
-        if(!$role){
+        $departmentRole = $this->departmentRoleRepository
+            ->findByDepartmentAndRole($departmentId, $roleId);
+
+        if (!$departmentRole) {
             return [
                 'data' => null,
-                'message' => 'the Role not found',
+                'message' => 'This role is not assigned to the selected department',
                 'code' => 404
             ];
-
         }
-      $permissions=  $role->permissions;
+
+        $permissions = $this->departmentRoleRepository
+            ->getPermissionsByDepartmentRoleId($departmentRole->id);
+
         return [
             'data' => $permissions,
-            'message' => ' the permissions  successfully',
+            'message' => 'Permissions retrieved successfully',
             'code' => 200
         ];
-
-
-    }
-    public function AddPermission(\App\Http\Requests\AddPermission $request)
+    }    public function AddPermission(\App\Http\Requests\AddPermission $request)
     {
         $permission=  $this->permissionRepository->create([
                 'name' =>  $request->name,
@@ -65,38 +71,43 @@ class PermissionServices
 
     }
 
-    public function AddPermissionToRole($permission_id, $role_id)
+    public function addPermissionsToDepartmentRole($request)
     {
-        $role=$this->roleRepository->findById($role_id);
-        if(!$role){
+        $departmentRole = $this->departmentRoleRepository
+            ->findByDepartmentAndRole($request->department_id, $request->role_id);
+
+        if (!$departmentRole) {
             return [
                 'data' => null,
-                'message' => 'the Role not found',
+                'message' => 'This role is not assigned to the selected department',
                 'code' => 404
             ];
+        }       $permissionIds = $request->permission_ids;
 
-        }
-        $permission=$this->permissionRepository->findById($permission_id);
-        if(!$permission){
-            return [
-                'data' => null,
-                'message' => 'the permission not found',
-                'code' => 404
-            ];
+        foreach ($permissionIds as $permissionId) {
 
+            $permission = $this->permissionRepository
+                ->findById($permissionId);
+
+            if (!$permission) {
+
+                return [
+                    'data' => null,
+                    'message' => "Permission {$permissionId} not found",
+                    'code' => 404
+                ];
+            }
         }
-        $role->givePermissionTo($permission);
+
+        $departmentRole->permissions()
+            ->syncWithoutDetaching($permissionIds);
+
         return [
-            'data' => $role->permissions,
-            'message' => ' the Permissions ِAdded successfully',
+            'data' => $departmentRole->permissions()->get(),
+            'message' => 'Permissions added successfully',
             'code' => 200
         ];
-
-
-
-
-}
-
+    }
     public function updatePermission(\App\Http\Requests\AddPermission $request, $id)
     {
         $permission=$this->permissionRepository->findById($id);
@@ -122,38 +133,6 @@ class PermissionServices
 
 
 
-    public function updatePermissionForRole($request,$role_id,$permission_id)
-    {
-        $role=$this->roleRepository->findById($role_id);
-        if(!$role){
-            return [
-                'data' => null,
-                'message' => 'the Role not found',
-                'code' => 404
-            ];
-
-        }
-        $permission=$this->permissionRepository->findById($permission_id);
-        if(!$permission){
-            return [
-                'data' => null,
-                'message' => 'the permission not found',
-                'code' => 404
-            ];
-
-        }
-        $this->permissionRepository->updateRole([
-                'name'=>$request->name]
-            ,$permission);
-        return [
-            'data' => $permission,
-            'message' => ' the permission updated successfully',
-            'code' => 200
-        ];
-
-    }
-
-
 
     public function DeletePermission($id)
     {
@@ -175,27 +154,19 @@ class PermissionServices
 
     }
 
-    public function deletePermissionForRole($role_id, $permission_id)
+    public function deletePermissionForRole($department_id,$role_id, $permission_id)
     {
-        $role=$this->roleRepository->findById($role_id);
-        if(!$role){
+        $departmentRole = $this->departmentRoleRepository
+            ->findByDepartmentAndRole($department_id,$role_id);
+
+        if (!$departmentRole) {
             return [
                 'data' => null,
-                'message' => 'the Role not found',
+                'message' => 'This role is not assigned to the selected department',
                 'code' => 404
             ];
-
         }
-        $permission=$this->permissionRepository->findById($permission_id);
-        if(!$permission){
-            return [
-                'data' => null,
-                'message' => 'the permission not found',
-                'code' => 404
-            ];
-
-        }
-        $role->revokePermissionTo($permission);
+        $permission=$this->departmentRolePermissionRepository->findById($departmentRole,$permission_id);
         return [
             'data' => $permission,
             'message' => ' the permission deleted successfully',

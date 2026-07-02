@@ -63,6 +63,16 @@ class Campaign extends Model
     {
         return $this->hasMany(Attendance::class);
     }
+
+    public function voulnterrs()
+    {
+        return $this->belongsToMany(
+            VolunteerProfile::class,
+            'campaign_volunteer',
+            'campaign_id',
+            'volunteer_profile_id'
+        );
+    }
     public function goals()
     {
         return $this->hasMany(
