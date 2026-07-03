@@ -1,16 +1,13 @@
 <?php
 
 use App\Http\Controllers\CampaignEvaluationController;
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeviceTokenController;
 use App\Http\Controllers\ApprovalRequestController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\courseController;
-use App\Http\Controllers\IndicatorController;
-use App\Http\Controllers\IndicatorGeneratorController;
-use App\Http\Controllers\KPIController;
+use App\Http\Controllers\TeamRequestController;
 use App\Http\Controllers\evaluationTaskController;
 use App\Http\Controllers\MonitoringGoalController;
 use App\Http\Controllers\PointTransactionController;
@@ -20,12 +17,7 @@ use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\VolunteerRequestController;
 use App\Services\ApprovalRequestService;
-use App\Services\AIUnderstandingService;
 use App\Services\KPIBrain;
-use App\Services\KPIBrainService;
-use App\Services\KPIEngineService;
-use App\Services\KPIExtractorService;
-use App\Services\KpiUnderstandingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -113,9 +105,14 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
     Route::post('searchUserByRole', [UserController::class, 'searchUser']);
         Route::post('searchVolunteer', [UserController::class, 'searchVolunteer']);
 
-        
+
     Route::get('ShowAllRoles', [UserController::class, 'ShowAllRoles']);
         Route::put('updateStatusUser/{id}', [UserController::class, 'updateStatusUser']);
+    Route::post('searchVolunteer', [UserController::class, 'searchVolunteer']);
+    Route::get('ShowAllRoles', [UserController::class, 'ShowAllRoles']);
+
+     Route::put('updateStatusUser/{id}', [UserController::class, 'updateStatusUser']);
+
     Route::get('showPointForUser', [PointTransactionController::class, 'showPointForUser']);
         Route::post('addPonus', [PointTransactionController::class, 'addPonus']);
     Route::post('showPointForVolunteer/{id}', [PointTransactionController::class, 'showPointForVolunteer']);
@@ -152,10 +149,6 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
     Route::post('setTargetValue', [MonitoringGoalController::class, 'setTargetValue']);
 
 
-
-
-
-
 ////////////////////////////taskEvaluation
     Route::post('storeEvaluationTask',
         [\App\Http\Controllers\evaluationTaskController::class, 'store']);
@@ -179,6 +172,12 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
     Route::get('top-volunteers', [UserController::class, 'getTopVolunteers']);
     Route::post('campaignsjoin/{campaignId}', [CampaignController::class, 'joinCampaign']);
 
+//////تطوع للحملة ك فريق   Route::post('/team-request', [TeamRequestController::class, 'create']);
+  Route::get('available-volunteers/{campaign_id}', [TeamRequestController::class, 'getAvailableVolunteers']);
+  Route::post('team-request', [TeamRequestController::class, 'create']);
+    Route::post('team-request-accept/{id}', [TeamRequestController::class, 'accept']);
+
+    Route::post('team-request-reject/{id}', [TeamRequestController::class, 'reject']);
     Route::get('showMyCampanig', [CampaignController::class, 'showMyCampanig']);
 
     /////////////////////Complaint with Raya heeeeeeeeheeeee
@@ -205,11 +204,8 @@ Route::post('/update-device-token', [DeviceTokenController::class, 'updateDevice
 
 Route::get('/my-notifications', [VolunteerRequestController::class, 'getMyNotifications']);
 ////////////موظف المرااقبة والتقييم
-Route::get('evaluation-my-tasks',[evaluationTaskController::class, 'myTasks']
-);
-///قسم الاشعارات
-    Route::post('/update-device-token', [DeviceTokenController::class, 'updateDeviceToken']);
-
-    Route::get('/my-notifications', [VolunteerRequestController::class, 'getMyNotifications']);
-
+Route::get('evaluation-my-tasks',[evaluationTaskController::class, 'myTasks']);
+Route::get('evaluation-tasks-questions/{id}', [evaluationTaskController::class, 'getQuestions']);
+Route::post('evaluation-tasks-submit/{id}', [evaluationTaskController::class, 'submitAnswers']);
+Route::post('evaluation-tasks-status/{id}', [evaluationTaskController::class, 'updateStatus']);
 });
