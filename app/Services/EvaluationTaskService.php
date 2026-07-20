@@ -7,7 +7,7 @@ use App\Http\Resources\evaluationTaskResourses;
 use App\Repositories\CampaignSurveyRepository;
 use App\Repositories\EvaluationTaskRepository;
 
-class evaluationTaskService
+class EvaluationTaskService
 {
     protected $taskRepository;
     protected  $CampaignSurveyRepository;
