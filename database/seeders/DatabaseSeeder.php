@@ -13,8 +13,10 @@ class DatabaseSeeder extends Seeder
             DepartmentSeeder::class,
             indicatorsSeeder::class,
             QuestionSeeder::class,
+            SurveySeeder::class,
             IndicatorSurveyQuestionSeeder::class,
             ManagerCampanigSedder::class,
             RolePermissionSeeder::class,
+            AdminSedder::class,
         ]);
     }}
