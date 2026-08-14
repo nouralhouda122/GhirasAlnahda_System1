@@ -8,24 +8,20 @@ return new class extends Migration
 public function up(): void
 {
 Schema::create('attendances', function (Blueprint $table) {
-$table->id();
-$table->foreignId('volunteer_id')
-->constrained('users')
-->cascadeOnDelete();
-$table->foreignId('campaign_id')
-->constrained()
-->cascadeOnDelete();
-$table->timestamp('check_in_time')->nullable();
-$table->timestamp('check_out_time')->nullable();
-$table->integer('hours')->nullable();
-$table->foreignId('recorded_by')
-->nullable()
-->constrained('users')
-->nullOnDelete();
-$table->boolean('is_leader')->default(false);
-$table->boolean('is_active_session')->default(false);
-$table->timestamps();
-$table->unique(['volunteer_id', 'campaign_id']);
+        $table->id();
+        $table->foreignId('volunteer_id')->constrained('users')->cascadeOnDelete();
+        $table->foreignId('campaign_id')->constrained()->cascadeOnDelete();
+        $table->timestamp('check_in_time')->nullable();
+        $table->timestamp('check_out_time')->nullable();
+        
+        // التعديل هنا: تحويلها لـ Decimal لتقبل كسور الساعات (مثل 1.5 ساعة)
+        $table->decimal('hours', 8, 2)->nullable(); 
+        
+        $table->foreignId('recorded_by')->nullable()->constrained('users')->nullOnDelete();
+        $table->boolean('is_leader')->default(false);
+        $table->boolean('is_active_session')->default(false);
+        $table->timestamps();
+
 });
 }
 

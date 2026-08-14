@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Services;
-
 use App\Http\Requests\AttendanceRequest;
 use App\Http\Resources\ApprovalRequestResource;
 use App\Http\Resources\PointTransactionResources;
@@ -18,11 +16,6 @@ use App\Http\Resources\AttendanceResource;
 
 class AttendanceService
 {
-
-
-
-
-
     public function __construct(
         CampaingRepository $CampaingRepository,
         AttendanceRepository $atendanceRepository,
@@ -217,7 +210,7 @@ class AttendanceService
     ///////راية
 
 
-    public function scanVolunteerQr($request)
+   public function scanVolunteerQr($request)
     {
         $currentUser = Auth::user();
         $campaignId  = $request->input('campaign_id');
@@ -250,7 +243,7 @@ class AttendanceService
             ->where('volunteer_profile_id', $profile->id)
             ->where('status', 'approved')
             ->exists();
-
+ 
         if (!$isVolunteerApprovedInCampaign) {
             return ['code' => 400, 'message' => 'This volunteer is not approved or registered in this campaign.', 'data' => null];
         }
@@ -259,6 +252,7 @@ class AttendanceService
 
         $activeSession = $this->atendanceRepository->findActiveVolunteerSession($volunteer->id, $campaignId);
 
+        // سـيـنـاريـو الـ Check-In (تسجيل الدخول لأول مرة اليوم)
         if (!$activeSession) {
             $attendance = $this->atendanceRepository->create([
                 'volunteer_id'       => $volunteer->id,
@@ -276,18 +270,47 @@ class AttendanceService
             ];
         }
 
-        // سـيـنـاريـو الـ Check-Out (تسجيل خروج وحساب الساعات)
+        // سـيـنـاريـو الـ Check-Out (تسجيل خروج وحساب الساعات والنقاط)
         $checkOutTime = Carbon::now();
         $checkInTime  = Carbon::parse($activeSession->check_in_time);
 
         $minutes = $checkOutTime->diffInMinutes($checkInTime);
         $hours   = round($minutes / 60, 2);
+        
+        // حساب النقاط (كل ساعة = نقطة مثلاً)
+        $points  = floor($hours); 
+ 
+        // 🌟 استخدام DB Transaction لضمان تحديث الحضور، الساعات، والنقاط معاً بدون أي ضياع للبيانات
+        \Illuminate\Support\Facades\DB::transaction(function () use ($activeSession, $checkOutTime, $hours, $points, $volunteer, $campaignId, $currentUser) {
+            
+            // 1. تحديث جلسة الحضور
+            $this->atendanceRepository->update([
+                'check_out_time'    => $checkOutTime,
+                'is_active_session' => false,
+                'hours'             => $hours,
+                'recorded_by'       => $currentUser->id // توثيق أن هذا القائد هو من قام بمسح الكود
+            ], $activeSession);
 
-        $this->atendanceRepository->update([
-            'check_out_time'    => $checkOutTime,
-            'is_active_session' => false,
-            'hours'             => $hours
-        ], $activeSession);
+            // 2. تحديث بروفايل المتطوع (زيادة الرصيد)
+            $profile = $volunteer->volunteerProfile;
+            if ($profile) {
+                $profile->increment('totalHours', $hours);
+                $profile->increment('pointsBalance', $points);
+            }
+
+            // 3. توثيق حركة النقاط للمتطوع (إذا كان لديه نقاط)
+            if ($points > 0) {
+                $this->pointTransactionRepository->create([
+                    'volunteer_id' => $volunteer->id,
+                    'campaign_id'  => $campaignId,
+                    'points'       => $points,
+                    'type'         => 'attendance',
+                    'reason'       => 'Volunteer campaign attendance',
+                    'description'  => 'Auto calculated from QR Check-Out',
+                    'awarded_by'   => $currentUser->id,
+                ]);
+            }
+        });
 
         return [
             'code'    => 200,
@@ -295,5 +318,4 @@ class AttendanceService
             'data'    => new AttendanceResource($activeSession->fresh(['volunteer', 'campaign']))
         ];
     }
-
     }

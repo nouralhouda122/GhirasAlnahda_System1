@@ -16,5 +16,6 @@ class DatabaseSeeder extends Seeder
             IndicatorSurveyQuestionSeeder::class,
             ManagerCampanigSedder::class,
             RolePermissionSeeder::class,
+            AdminSedder::class, 
         ]);
     }}
