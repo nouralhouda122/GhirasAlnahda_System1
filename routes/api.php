@@ -65,7 +65,7 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
     //ادارة الاقسام
     Route::post('storeDepartment', [DepartmentController::class, 'store']);
     Route::get('showAllDepartment', [DepartmentController::class, 'index']);
-    Route::post(' ', [UserController::class, 'addUser']);
+    Route::post('addEmployee', [UserController::class, 'addUser']);
         Route::post('assignDepartmentManager/{id}/{user_id}', [UserController::class, 'assignDepartmentManager']);
     //ادارة الادوار
     Route::get('getRoleNames', [RoleController::class, 'getRoleNames']);

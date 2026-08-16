@@ -1,6 +1,7 @@
 <?php
 namespace App\Services;
 use App\Helpers\StorageHelper;
+use App\Http\Requests\CampaingRequest;
 use App\Http\Requests\UpdateCampanigRequest;
 use App\Http\Requests\SearchCampaignRequest;
 use App\Http\Requests\SearchForPermissionsAndRolesRequest;
@@ -31,7 +32,7 @@ class CampaignService
         $this->userService=$userService;
           $this->fcmService = $fcmService;
     }
-    public function create(UpdateCampanigRequest $request)
+    public function create(CampaingRequest $request)
     {
         return DB::transaction(function () use ($request) {
 
@@ -90,20 +91,20 @@ class CampaignService
                 }
 
 
-            $managers = \App\Models\User::role('Evaluation Manager')->get();
-           foreach ($managers as $manager) {
-    $this->fcmService->sendNotification(
-        $manager,
-        'حملة جديدة',
-        'تم إنشاء حملة جديدة تحتاج مراجعة من قسم التقييم والمتابعة',
-        'new_campaign',
-        'manager',
-        [
-            'campaign_id' => $campaign->id
-        ]
-    );
+        //    $managers = \App\Models\User::role('Evaluation Manager')->get();
+       //    foreach ($managers as $manager) {
+   // $this->fcmService->sendNotification(
+    //    $manager,
+    //    'حملة جديدة',
+   //     'تم إنشاء حملة جديدة تحتاج مراجعة من قسم التقييم والمتابعة',
+     //   'new_campaign',//
+     //   'manager',//
+    //    [
+          //  'campaign_id' => $campaign->id
+   //     ]
+  //  );
 }
-                }
+          //      }
 
 
             return [

@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 use App\Helpers\ResponseHelper;
 use App\Http\Requests\ApprovalRequest;
+use App\Http\Requests\CampaingRequest;
 use App\Http\Requests\UpdateCampanigRequest;
 use App\Http\Requests\SearchCampaignRequest;
 use App\Http\Requests\SearchForPermissionsAndRolesRequest;
@@ -21,7 +22,7 @@ class CampaignController extends Controller
     {
         //
     }
-    public function create(UpdateCampanigRequest $request)
+    public function create(CampaingRequest $request)
     {
       $data=$this->campaignService->create($request);
       if($data['code']===200){
