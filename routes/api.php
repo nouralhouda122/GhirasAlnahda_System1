@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CampaignAIRecommendationController;
 use App\Http\Controllers\CampaignEvaluationController;
 use App\Http\Controllers\DeviceTokenController;
 use App\Http\Controllers\ApprovalRequestController;
@@ -65,7 +66,7 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
     //ادارة الاقسام
     Route::post('storeDepartment', [DepartmentController::class, 'store']);
     Route::get('showAllDepartment', [DepartmentController::class, 'index']);
-    Route::post(' ', [UserController::class, 'addUser']);
+    Route::post('addEmployee', [UserController::class, 'addUser']);
         Route::post('assignDepartmentManager/{id}/{user_id}', [UserController::class, 'assignDepartmentManager']);
     //ادارة الادوار
     Route::get('getRoleNames', [RoleController::class, 'getRoleNames']);
@@ -154,7 +155,18 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
         [\App\Http\Controllers\evaluationTaskController::class, 'store']);
     Route::get('indexAllEvaluationTask', [\App\Http\Controllers\evaluationTaskController::class, 'index']);
 
+/////////////////////////////////////
+///
 
+    Route::get(
+        '/campaigns/{campaign}/ai-recommendations/pre-launch',
+        [CampaignAIRecommendationController::class, 'preLaunchRecommendations']
+    )->name('campaigns.ai-recommendations.pre-launch');
+
+    Route::get(
+        '/campaigns/{campaign}/ai-recommendations/post-launch',
+        [CampaignAIRecommendationController::class, 'postLaunchRecommendations']
+    )->name('campaigns.ai-recommendations.post-launch');
 
 
 /////////////////////////////////////////////////////////////

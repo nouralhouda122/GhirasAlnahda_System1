@@ -1,27 +1,24 @@
 <?php
 
-
 namespace App\Repositories;
 use Illuminate\Support\Facades\Cache;
-
 use App\Models\Campaign;
 use App\Models\Campaign_kpi;
 
 class CampaingRepository
 {
-
-    public function createCampaing( array  $data)
+    public function createCampaing(array $data)
     {
         return Campaign::create([
             'title' => $data['title'],
-            'latitude' =>$data['latitude'],
-            'location' =>$data['location'],
+            'latitude' => $data['latitude'],
+            'location' => $data['location'],
             'radius' => $data['radius'],
             'required_volunteers' => $data['required_volunteers'],
             'target_amount' => $data['target_amount'],
-            'has_evaluation' => $data['has_evaluation'],
-            'image' => $data['image']??null,
-            'video' =>$data['video']??null,
+            'has_evaluation' => $data['has_evaluation'] ?? 0,
+            'image' => $data['image'] ?? null,
+            'video' => $data['video'] ?? null,
             'description' => $data['description'],
             'type' => $data['type'],
             'priority' => $data['priority'],
@@ -29,8 +26,7 @@ class CampaingRepository
             'end_date' => $data['end_date'],
             'longitude' => $data['longitude'],
         ]);
-    }
-    public function createCampaing_Kpi( array $data)
+    }    public function createCampaing_Kpi( array $data)
     {
         return Campaign_kpi::create($data);
     }
@@ -43,7 +39,7 @@ class CampaingRepository
     // {
     //     return Campaign::all();
     // }
-//الدالة بعد ما طبقنا الكاش 
+//الدالة بعد ما طبقنا الكاش
 public function index()
 {
     return Cache::remember('all_campaigns', now()->addMinutes(10), function () {
