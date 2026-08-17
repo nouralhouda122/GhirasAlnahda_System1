@@ -10,6 +10,7 @@ use App\Http\Requests\searchUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Requests\UpdateUserStatusRequest;
 use App\Http\Requests\UserRequest;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -60,10 +61,16 @@ class UserController extends Controller
             $user->image = $path;
         }
         $user->save();
-        if ($user->image) {
-            $user->image = asset('storage/' . $user->image);
-        }
-        return ResponseHelper::Success($user, 'تم تحديث البروفايل بنجاح', 200);
+
+        // ملاحظة: لا نعدّل $user->image هنا. العمود يبقى مساراً نسبياً دائماً،
+        // وبناء الرابط الكامل مسؤولية UserResource وحده — وإلا تتكرر البادئة
+        // فينتج https://.../storage/https://.../storage/... ويفشل التطبيق بـ
+        // Failed host lookup: 'https'
+        return ResponseHelper::Success(
+            new UserResource($user),
+            'تم تحديث البروفايل بنجاح',
+            200
+        );
     }
 
     public function card()

@@ -16,9 +16,7 @@ class VolunteerDetailsResource extends JsonResource
             'email' => $this->email,
             'phone' => $this->phone,
             'status' => $this->status,
-            'image' => $this?->image
-                ? asset('storage/' . $this->image)
-                : null,
+            'image' => $this->image_url,
 
             'profile' => [
                 'age' => $this->volunteerProfile?->age,

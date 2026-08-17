@@ -56,7 +56,15 @@ class User extends Authenticatable
     }
     public function getImageUrlAttribute()
     {
-        return $this->image ? asset('storage/' . $this->image) : null;
+        if (! $this->image) {
+            return null;
+        }
+
+        // إن كانت القيمة رابطاً كاملاً مسبقاً فلا نضيف البادئة مرة ثانية،
+        // وإلا نتج https://.../storage/https://.../storage/...
+        return str_starts_with($this->image, 'http')
+            ? $this->image
+            : asset('storage/' . $this->image);
     }
     public function managedDepartment() {
         return $this->hasOne(Department::class, 'manager_id');

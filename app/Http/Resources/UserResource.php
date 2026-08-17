@@ -18,9 +18,7 @@ class UserResource extends JsonResource
             'Member_ship' => $this->getRoleNames()->isNotEmpty()
                 ? $this->getRoleNames()
                 : ['user'],
-            'image' => $this?->image
-                ? asset('storage/' . $this->image)
-                : null,
+            'image' => $this->image_url,
 
 
         ];
