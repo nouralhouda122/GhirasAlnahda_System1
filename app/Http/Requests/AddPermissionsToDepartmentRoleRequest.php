@@ -14,7 +14,6 @@ class AddPermissionsToDepartmentRoleRequest extends FormRequest
     public function rules(): array
     {
         return [
-
             'department_id' => [
                 'required',
                 'integer',

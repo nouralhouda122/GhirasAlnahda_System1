@@ -40,6 +40,7 @@ class UserService
     protected $emailRepository;
     private DepartmentRepository $departmentRepository;
     private RoleRepository $roleRepository;
+
     private DepartmentRoleRepository $departmentRoleRepository;
     private UserAuthorizationService $userAuthorizationService;
 
@@ -402,7 +403,7 @@ class UserService
             return ['user' => null, 'message' => 'User not found', 'code' => 404];
         }
 
-        $this->authorize('update', $user);
+      //  $this->authorize('update', $user);
 
         $data = [
             'status' => $request->status,
