@@ -15,9 +15,7 @@ class PointTransactionResources extends JsonResource
             'points' => $this->points,
             'type' => $this->type,
             'reason' => $this->reason,
-
             'description' => $this->description,
-
             'awarded_by' => $this->whenLoaded('awardedBy', function () {
                 return [
                     'id' => $this->volunteer->id,

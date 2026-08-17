@@ -5,51 +5,60 @@
 namespace App\Policies;
 
 use App\Models\User;
+use Spatie\Permission\Models\Role;
 
 class UserPolicy
 {
-    public function create(User $user, string $role): bool
+    public function create(User $authUser, array $requestedData)
     {
-        if ($user->hasRole('Super Admin')) {
-            return true;
-        }
-        return $user->can("create $role");
-    }
-    public function update(User $authUser, User $user): bool
-    {
-        if ($authUser->hasRole('Super Admin')) {
+        if ($authUser->departmentRole?->role?->name === 'Super Admin') {
             return true;
         }
 
-        if ($authUser->hasRole('Campaign Manager')) {
-            return $user->hasAnyRole([
-                'Campaign Employee',
-                'Volunteer Manager'
-            ]);
-        }
+        if ($authUser->departmentRole?->role?->name === 'Manager') {
 
-        if ($authUser->hasRole('Evaluation Manager')) {
-            return $user->hasRole('Evaluation Officer');
+            $isSameDepartment = (int)$requestedData['department_id'] === (int)$authUser->departmentRole->department_id;
+
+            $targetRole = Role::find($requestedData['role_id']);
+
+            $allowedRoles = ['Employee', 'Team Leader', 'Volunteer'];
+            $isAllowedRole = $targetRole && in_array($targetRole->name, $allowedRoles);
+
+            return $isSameDepartment && $isAllowedRole;
         }
 
         return false;
     }
-    public function view(User $authUser, User $user): bool
+
+    public function update(User $authUser, User $targetUser): bool
     {
-        if ($authUser->hasRole('Super Admin')) {
+        if ($authUser->departmentRole?->role?->name === 'Super Admin') {
             return true;
         }
 
-        if ($authUser->hasRole('Campaign Manager')) {
-            return $user->hasAnyRole([
-                'Campaign Employee',
-                'Volunteer Manager'
-            ]);
-        }
+        if ($authUser->departmentRole?->role?->name === 'Manager') {
 
-        if ($authUser->hasRole('Evaluation Manager')) {
-            return $user->hasRole('Evaluation Officer');
+            $isSameDepartment = $authUser->departmentRole->department_id === $targetUser->departmentRole?->department_id;
+
+            $targetRoleName = $targetUser->departmentRole?->role?->name;
+            $canManageRole = in_array($targetRoleName, ['Employee', 'Team Leader', 'Volunteer', 'Volunteer Manager']);
+
+            return $isSameDepartment && $canManageRole;
         }
 
         return false;
-    }    }
+    }
+
+    public function view(User $authUser, User $targetUser): bool
+    {
+        if ($authUser->departmentRole?->role?->name === 'Super Admin') {
+            return true;
+        }
+
+        if ($authUser->departmentRole?->role?->name === 'Manager') {
+            return $authUser->departmentRole->department_id === $targetUser->departmentRole?->department_id;
+        }
+
+        return false;
+    }
+}

@@ -29,7 +29,7 @@ class Survey extends Model
     public function answers()
     {
         return $this->hasMany(
-            surveyAnswer::class
+            SurveyAnswer::class
         );
     }
     public function evaluationTasks()

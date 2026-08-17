@@ -6,6 +6,8 @@ namespace App\Http\Controllers;
 
 use App\Helpers\ResponseHelper;
 use App\Http\Requests\AddPermission;
+use App\Http\Requests\AddPermissionsToDepartmentRoleRequest;
+use App\Http\Requests\updatePermissionsToDepartmentRoleRequest;
 use App\Http\Requests\SearchForPermissionsAndRolesRequest;
 use App\Services\PermissionServices;
 use App\Services\RoleService;
@@ -29,9 +31,9 @@ class PermissionController
     }
 
 //عرض صلاحيات دور
-    public function getAllPermissionsForRole($id): \Illuminate\Http\JsonResponse
+    public function getAllPermissionsForRoleInDepartment($departmentId, $roleId): \Illuminate\Http\JsonResponse
     {
-        $data = $this->permissionServices->getAllPermissionsForRole($id);
+        $data = $this->permissionServices->getAllPermissionsForRoleInDepartment($departmentId, $roleId);
         if ($data['code'] === 200) {
             return ResponseHelper::Success($data['data'], $data['message'], $data['code']);
         } else {
@@ -51,9 +53,9 @@ class PermissionController
     }
 
 //اضافة صلاحية لدور
-    public function AddPermissionToRole($permission_id, $role_id): \Illuminate\Http\JsonResponse
+    public function AddPermissionToRole(AddPermissionsToDepartmentRoleRequest $request): \Illuminate\Http\JsonResponse
     {
-        $data = $this->permissionServices->AddPermissionToRole($permission_id,$role_id);
+        $data = $this->permissionServices->addPermissionsToDepartmentRole($request);
         if ($data['code'] === 200) {
             return ResponseHelper::Success($data['data'], $data['message'], $data['code']);
         } else {
@@ -72,16 +74,6 @@ class PermissionController
         }
     }
 
-//تعديل صلاحية دور
-    public function updatePermissionForRole(AddPermission $request, $role_id,$permission_id): \Illuminate\Http\JsonResponse
-    {
-        $data = $this->permissionServices->updatePermissionForRole($request,$role_id,$permission_id);
-        if ($data['code'] === 200) {
-            return ResponseHelper::Success($data['data'], $data['message'], $data['code']);
-        } else {
-            return ResponseHelper::Error($data['data'], $data['message'], $data['code']);
-        }
-    }
 
 //حذف صلاحية
     public function DeletePermission($id): \Illuminate\Http\JsonResponse
@@ -94,9 +86,9 @@ class PermissionController
         }
     }
     //حذف صلاحية دور
-    public function deletePermissionForRole($role_id,$permission_id): \Illuminate\Http\JsonResponse
+    public function deletePermissionForRole($role_id,$department_id,$permission_id,): \Illuminate\Http\JsonResponse
     {
-        $data = $this->permissionServices->deletePermissionForRole($role_id,$permission_id);
+        $data = $this->permissionServices->deletePermissionForRole($role_id,$department_id,$permission_id,);
         if ($data['code'] === 200) {
             return ResponseHelper::Success($data['data'], $data['message'], $data['code']);
         } else {

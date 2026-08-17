@@ -2,7 +2,7 @@
 namespace App\Http\Controllers;
 use App\Helpers\ResponseHelper;
 use App\Http\Requests\ApprovalRequest;
-use App\Http\Requests\CampaingRequest;
+use App\Http\Requests\UpdateCampanigRequest;
 use App\Http\Requests\SearchCampaignRequest;
 use App\Http\Requests\SearchForPermissionsAndRolesRequest;
 use App\Models\Campaign;
@@ -21,11 +21,7 @@ class CampaignController extends Controller
     {
         //
     }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create(CampaingRequest $request)
+    public function create(UpdateCampanigRequest $request)
     {
       $data=$this->campaignService->create($request);
       if($data['code']===200){
@@ -33,6 +29,16 @@ class CampaignController extends Controller
       } else {
           return ResponseHelper::Error($data['user'], $data['message'], $data['code']);
       }
+    }
+//تعديل حملة
+    public function update( UpdateCampanigRequest $request,$campanig_id)
+    {
+        $data=$this->campaignService->update($request,$campanig_id);
+        if($data['code']===200){
+            return ResponseHelper::Success($data['data'], $data['message'], $data['code']);
+        } else {
+            return ResponseHelper::Error($data['data'], $data['message'], $data['code']);
+        }
     }
 
     /**
@@ -92,10 +98,17 @@ class CampaignController extends Controller
             return ResponseHelper::Error($data['data'], $data['message'], $data['code']);
         }
     }
-
-    public function update(Request $request, string $id)
+//عرض متطوعين حملة
+    public function showCampanigVoulnterrs($campaignId)
     {
+        $data=$this->campaignService->showCampanigVoulnterrs($campaignId);
+        if($data['code']===200){
+            return ResponseHelper::Success($data['data'], $data['message'], $data['code']);
+        } else {
+            return ResponseHelper::Error($data['data'], $data['message'], $data['code']);
+        }
     }
+
     public function destroy(string $id)
     {
     }

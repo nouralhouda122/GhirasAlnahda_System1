@@ -4,7 +4,9 @@
 namespace App\Services;
 
 
+use App\Http\Requests\AddPermission;
 use App\Repositories\DepartmentRepository;
+use App\Repositories\DepartmentRoleRepository;
 use App\Repositories\EmailVerficationRepository;
 use App\Repositories\RoleRepository;
 use App\Repositories\userRepository;
@@ -13,10 +15,13 @@ use Spatie\Permission\Models\Role;
 class RoleService
 {
     protected $roleRepository;
-    public function __construct(RoleRepository $roleRepository,DepartmentRepository $departmentRepository)
+    public function __construct(DepartmentRoleRepository $departmentRoleRepository,
+                                roleRepository $roleRepository, DepartmentRepository $departmentRepository)
     {
         $this->roleRepository = $roleRepository;
         $this->departmentRepository = $departmentRepository;
+        $this->departmentRoleRepository = $departmentRoleRepository;
+
 
     }
 
@@ -91,7 +96,7 @@ class RoleService
         ];
     }
 
-    public function AddRole(\App\Http\Requests\AddPermission $request)
+    public function AddRole( $request)
     {
       $role=  $this->roleRepository->create([
 
@@ -124,79 +129,47 @@ class RoleService
         ];
     }
 
-    public function getAllRolesForDepartment($id)
+
+    public function addRoleForDepartment($request): array
     {
-        $departemnt=$this->departmentRepository->find($id);
-        if(!$departemnt){
+        foreach ($request->role_ids as $roleId) {
+
+            $this->departmentRoleRepository->create([
+
+                'department_id' => $request->department_id,
+
+                'role_id' => $roleId,
+
+            ]);
+        }
+
+        return [
+
+            'data' => [],
+
+            'message' => 'Roles assigned to department successfully.',
+
+            'code' => 200
+        ];
+    }
+    public function showRoleForDepartment(int $departmentId): array
+    {
+        $department = $this->departmentRepository->find($departmentId);
+
+        if (!$department) {
             return [
                 'data' => null,
-                'message' => 'the Department not found',
+                'message' => 'Department not found',
                 'code' => 404
             ];
         }
-       $role= $this->roleRepository->getRoleByDepartment($departemnt->id);
-        return [
-            'data' => $role,
-            'message' => ' the Role  successfully',
-            'code' => 200
-        ];
 
-    }
+        $roles = $this->departmentRoleRepository
+            ->getByDepartment($departmentId);
 
-    public function getAlld()
-    {
-        $roles=$this->roleRepository->getAll();
         return [
             'data' => $roles,
-            'message' => 'Roles fetched successfully',
+            'message' => 'Roles retrieved successfully',
             'code' => 200
         ];
-    }
-    public function AddRoleForDepartment($request, $department_id)
-    {
-        $department = $this->departmentRepository->find($department_id);
-
-        if (!$department) {
-            return [
-                'data' => null,
-                'message' => 'the Department not found',
-                'code' => 404
-            ];
-        }
-
-        $role = $this->roleRepository->create([
-            'name' => $request->name,
-            'department_id' => $department->id,
-            'guard_name' => 'web',
-        ]);
-
-        return [
-            'data' => $role,
-            'message' => 'the role added successfully',
-            'code' => 200
-        ];
-    }
-
-    public function showRoleForDepartment($department_id)
-    {
-        $department = $this->departmentRepository->find($department_id);
-
-        if (!$department) {
-            return [
-                'data' => null,
-                'message' => 'the Department not found',
-                'code' => 404
-            ];
-        }
-
-        $role = $this->roleRepository->getRoleByDepartment($department->id,
-        );
-
-        return [
-            'data' => $role,
-            'message' => '  success',
-            'code' => 200
-        ];
-
-    }
-}
+    }}

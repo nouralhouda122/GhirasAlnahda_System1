@@ -6,7 +6,7 @@ use App\Http\Requests\ScanQrAttendanceRequest;
 
 use App\Helpers\ResponseHelper;
 use App\Http\Requests\AttendanceRequest;
-use App\Http\Requests\CampaingRequest;
+use App\Http\Requests\UpdateCampanigRequest;
 use App\Services\AttendanceService;
 use App\Services\UserService;
 use Illuminate\Support\Facades\Auth;
@@ -57,7 +57,7 @@ class AttendanceController
         }
     }
 
-// ////////راية 
+// ////////راية
 //     public function scanQr(ScanQrAttendanceRequest $request)
 //     {
 //         $data = $this->attendanceService->scanQr($request);
@@ -66,8 +66,8 @@ class AttendanceController
 //         } else {
 //             return ResponseHelper::Error($data['user'], $data['message'], $data['code']);
 //         }
-        
-//     } 
+
+//     }
 public function scanVolunteerQr(ScanQrAttendanceRequest $request)
 {
     // // التأمين الأمني بناءً على الـ Seeder الخاص بكِ لـقائد الفريق
@@ -82,7 +82,7 @@ public function scanVolunteerQr(ScanQrAttendanceRequest $request)
     } else {
         return ResponseHelper::Error($data['data'], $data['message'], $data['code']);
     }
-} 
+}
 
 }
 

@@ -1,13 +1,16 @@
 <?php
 namespace App\Services;
+use App\Http\Requests\AddPointTransactionRequest;
 use App\Http\Resources\PointTransactionResources;
+use App\Repositories\PointTransactionRepository;
 use App\Repositories\userRepository;
 class PointTransactionService
 {
     protected $userRepository;
-    public function __construct(userRepository $userRepository)
+    public function __construct(userRepository $userRepository,PointTransactionRepository $pointTransactionRepository)
     {
         $this->userRepository = $userRepository;
+        $this->pointTransactionRepository=$pointTransactionRepository;
     }
     public function index($user)
     {
@@ -56,4 +59,17 @@ class PointTransactionService
             'message' => 'success',
             'code' => 200
         ];
-    }}
+    }
+
+    public function addPonus(AddPointTransactionRequest $request)
+    {
+        $pointTranscation=$this->pointTransactionRepository->create($request->toArray());
+
+        return [
+            'user' => $pointTranscation,
+            'message' => 'success',
+            'code' => 200
+        ];
+
+    }
+}

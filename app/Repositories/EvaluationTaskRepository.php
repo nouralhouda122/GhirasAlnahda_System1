@@ -4,7 +4,7 @@ namespace App\Repositories;
 
 use Illuminate\Support\Facades\DB;
 
-class evaluationTaskRepository
+class EvaluationTaskRepository
 {
     /**
      * حفظ مهمة تقييم جديدة في قاعدة البيانات

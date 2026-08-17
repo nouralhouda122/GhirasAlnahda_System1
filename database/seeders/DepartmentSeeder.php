@@ -18,10 +18,6 @@ class DepartmentSeeder extends Seeder
                 'name' => 'Evaluation Department',
                 'description' => 'Handles evaluation tasks and surveys',
             ],
-            [
-                'name' => 'Volunteer Department',
-                'description' => 'Manages volunteers and teams',
-            ],
         ];
 
         foreach ($departments as $department) {

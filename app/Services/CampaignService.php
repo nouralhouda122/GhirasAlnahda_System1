@@ -1,12 +1,13 @@
 <?php
 namespace App\Services;
 use App\Helpers\StorageHelper;
-use App\Http\Requests\CampaingRequest;
+use App\Http\Requests\UpdateCampanigRequest;
 use App\Http\Requests\SearchCampaignRequest;
 use App\Http\Requests\SearchForPermissionsAndRolesRequest;
 use App\Http\Resources\CampaignDetailsResource;
 use App\Http\Resources\CampaignResource;
 use App\Http\Resources\UserResource;
+use App\Http\Resources\VolunteerDetailsResource;
 use App\Repositories\AttendanceRepository;
 use App\Repositories\CampaingRepository;
 use App\Repositories\PointTransactionRepository;
@@ -30,7 +31,7 @@ class CampaignService
         $this->userService=$userService;
           $this->fcmService = $fcmService;
     }
-    public function create(CampaingRequest $request)
+    public function create(UpdateCampanigRequest $request)
     {
         return DB::transaction(function () use ($request) {
 
@@ -87,8 +88,8 @@ class CampaignService
                         'indicators' => $indicators
                     ];
                 }
-            
-            
+
+
             $managers = \App\Models\User::role('Evaluation Manager')->get();
            foreach ($managers as $manager) {
     $this->fcmService->sendNotification(
@@ -103,7 +104,7 @@ class CampaignService
     );
 }
                 }
-            
+
 
             return [
                 'user' => new CampaignDetailsResource($campaign), // تأكد أن هذا الريسورس يقرأ الـ image بشكل صحيح
@@ -337,6 +338,130 @@ public function registerVolunteerToCampaign(
             'message' => 'Campaigns retrieved successfully',
             'code' =>200
         ]) ;
+    }
+    public function showCampanigVoulnterrs($campaignId)
+    {
+        $campaign = $this->CampaignRepository->getById($campaignId);
+        if (!$campaign) {
+            return [
+                'data' => null,
+                'message' => 'Campaign not found',
+                'code' => 404
+            ];
+        }
+        $volunteers = $campaign
+            ->voulnterrs()
+            ->with('user')
+            ->get()
+            ->pluck('user');
+        return (['data'=>  VolunteerDetailsResource::collection($volunteers),
+            'message' => 'تم استرجاع متطوعين ',
+            'code' =>200
+        ]) ;
 
     }
-}
+
+    public function update($request,$campaignId)
+    {
+        {
+            $campaign = $this->CampaignRepository->getById($campaignId);
+            if (!$campaign) {
+                return [
+                    'data' => null,
+                    'message' => 'Campaign not found',
+                    'code' => 404
+                ];
+            }
+            $data = $request->validated();
+            if ($request->hasFile('image')) {
+
+                $uploadedImages = [];
+
+                foreach ($request->file('image') as $file) {
+                    $uploadedImages[] = $file->store('campaigns', 'public');
+                }
+
+                $data['image'] = json_encode($uploadedImages);
+            }
+
+            if ($request->hasFile('video')) {
+
+                $uploadedVideos = [];
+
+                foreach ($request->file('video') as $file) {
+                    $uploadedVideos[] = $file->store('campaigns_videos', 'public');
+                }
+
+                $data['video'] = json_encode($uploadedVideos);
+            }
+            if ($campaign->end_date < now()) {
+
+                return [
+                    'data' => [],
+                    'message' => 'Completed campaigns cannot be updated.',
+                    'code' => 400
+                ];
+            }
+
+            if ($campaign->start_date <= now()) {
+
+                $restrictedFields = [
+
+                    'start_date',
+                    'type',
+                    'required_volunteers',
+                    'latitude',
+                    'longitude',
+                    'radius',
+                    'target_amount'
+
+                ];
+
+                foreach ($restrictedFields as $field) {
+
+                    if (array_key_exists($field, $data)) {
+
+                        return [
+                            'data' => [],
+                            'message' => "Field '{$field}' cannot be updated after the campaign has started.",
+                            'code' => 400
+                        ];
+                    }
+                }
+            }
+
+            $startDate = $data['start_date'] ?? $campaign->start_date;
+            $endDate   = $data['end_date'] ?? $campaign->end_date;
+
+            if ($endDate <= $startDate) {
+
+                return [
+                    'data' => [],
+                    'message' => 'End date must be after start date.',
+                    'code' => 422
+                ];
+            }
+
+            $currentVolunteers = $campaign->voulnterrs()->count();
+
+            if (
+                isset($data['required_volunteers']) &&
+                $data['required_volunteers'] < $currentVolunteers
+            ) {
+
+                return [
+                    'data' => [],
+                    'message' => 'Required volunteers cannot be less than current registered volunteers.',
+                    'code' => 422
+                ];
+            }
+
+            $campaign = $this->CampaignRepository->update($data, $campaign);
+
+            return [
+                'data' => new CampaignResource($campaign),
+                'message' => 'Campaign updated successfully',
+                'code' => 200,
+            ];
+        }
+}}

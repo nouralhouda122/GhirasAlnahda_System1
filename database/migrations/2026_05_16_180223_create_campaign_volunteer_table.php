@@ -13,16 +13,10 @@ return new class extends Migration
     {
         Schema::create('campaign_volunteer', function (Blueprint $table) {
             $table->id();
-// الربط بجدول بروفايل المتطوعين وليس المستخدمين
             $table->foreignId('volunteer_profile_id')->constrained('volunteer_profiles')->onDelete('cascade');
-
-            // ربط الحملة
             $table->foreignId('campaign_id')->constrained('campaigns')->onDelete('cascade');
-
-            // حالة المتطوع داخل الحملة
             $table->enum('status', ['approved', 'left', 'removed'])->default('approved');
 
-            // منع التكرار بناءً على بروفايل المتطوع والحملة
             $table->unique(['volunteer_profile_id', 'campaign_id']);
 
             $table->timestamps();

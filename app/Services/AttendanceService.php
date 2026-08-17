@@ -12,8 +12,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\VolunteerProfile;
 use App\Http\Resources\AttendanceResource;
-
-
 class AttendanceService
 {
     public function __construct(
@@ -25,7 +23,6 @@ class AttendanceService
         $this->atendanceRepository = $atendanceRepository;
         $this->pointTransactionRepository = $pointTransactionRepository;
     }
-
     public function leaderCheckIn(AttendanceRequest $request, $id)
     {
         return DB::transaction(function () use ($request, $id) {

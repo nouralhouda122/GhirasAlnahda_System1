@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\ResponseHelper;
 use App\Http\Requests\AddPermission;
+use App\Http\Requests\AddRoleForDepartment;
 use App\Http\Requests\AddRoleRequest;
 use App\Http\Requests\SearchForPermissionsAndRolesRequest;
 use App\Services\RoleService;
@@ -49,9 +50,9 @@ class RoleController
     }
 
 //اضافة ادوار لقسم معين
-    public function AddRoleForDepartment(AddRoleRequest  $request,$department_id): \Illuminate\Http\JsonResponse
+    public function AddRoleForDepartment(AddRoleForDepartment  $request): \Illuminate\Http\JsonResponse
     {
-        $data = $this->roleService->AddRoleForDepartment($request,$department_id);
+        $data = $this->roleService->AddRoleForDepartment($request);
         if ($data['code'] === 200) {
             return ResponseHelper::Success($data['data'], $data['message'], $data['code']);
         } else {

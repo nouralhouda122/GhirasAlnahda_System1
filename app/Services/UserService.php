@@ -15,16 +15,22 @@ use App\Http\Resources\VolunteerListResource;
 use App\Mail\EmailVerificationMail;
 use App\Models\User;
 use App\Repositories\DepartmentRepository;
+use App\Repositories\DepartmentRolePermissionRepository;
+use App\Repositories\DepartmentRoleRepository;
 use App\Repositories\EmailVerficationRepository;
 use App\Repositories\RoleRepository;
 use App\Repositories\userRepository;
+use App\Services\Authorization\UserAuthorizationService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\UserStatusMail;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class UserService
 {
@@ -34,17 +40,25 @@ class UserService
     protected $emailRepository;
     private DepartmentRepository $departmentRepository;
     private RoleRepository $roleRepository;
+    private DepartmentRoleRepository $departmentRoleRepository;
+    private UserAuthorizationService $userAuthorizationService;
 
     public function __construct(
         RoleRepository $roleRepository,
         DepartmentRepository $departmentRepository,
         userRepository $userRepository,
-        EmailVerficationRepository $emailRepository
+        EmailVerficationRepository $emailRepository,
+        DepartmentRoleRepository $departmentRoleRepository,
+            UserAuthorizationService $userAuthorizationService
+
     ) {
         $this->departmentRepository = $departmentRepository;
         $this->userRepository = $userRepository;
         $this->emailRepository = $emailRepository;
         $this->roleRepository = $roleRepository;
+        $this->departmentRoleRepository = $departmentRoleRepository;
+        $this->userAuthorizationService = $userAuthorizationService;
+
     }
 
     protected function generateVerificationCode(): string
@@ -95,7 +109,6 @@ class UserService
             'code' => 200,
         ];
     }
-
     public function login(LoginRequest $request): array
     {
         if (!Auth::attempt($request->only(['email', 'password']))) {
@@ -106,9 +119,9 @@ class UserService
             ];
         }
 
-        $user = Auth::user();
+        $authUser = Auth::user();
 
-        if ($user->status === 'banned') {
+        if ($authUser->status === 'banned') {
             Auth::logout();
             return [
                 'user' => null,
@@ -117,7 +130,7 @@ class UserService
             ];
         }
 
-        if (is_null($user->email_verified_at)) {
+        if (is_null($authUser->email_verified_at)) {
             return [
                 'user' => null,
                 'message' => 'Email not verified',
@@ -125,21 +138,35 @@ class UserService
             ];
         }
 
-        $permissions = $user->getPermissionsViaRoles()->pluck('name')->toArray();
-        $user->givePermissionTo($permissions);
+        $user = User::with([
+            'departmentRole.role',
+            'departmentRole.department',
+            'departmentRole.permissions'
+        ])->find($authUser->id);
 
-        $user = User::with('roles.permissions', 'permissions')->find($user->id);
-        $user = $this->appendRolesAndPermission($user);
-        $user['token'] = $user->createToken('token')->plainTextToken;
+        $permissions = $user->departmentRole?->permissions->pluck('name')->values()->toArray() ?? [];
+        $role = $user->departmentRole?->role?->name ?? 'No Role';
+        $department = $user->departmentRole?->department?->name ?? 'No Department';
+
+        $token = $user->createToken('auth_token')->plainTextToken;
 
         return [
-            'user' => $user,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'department' => $department,
+                'role' => $role,
+                'permissions' => $permissions,
+                'token' => $token,
+            ],
+            'token' => $token,
             'message' => 'Login successful',
             'code' => 200
         ];
     }
-
-    public function logout(): array
+        public function logout(): array
     {
         $user = Auth::user();
 
@@ -158,6 +185,7 @@ class UserService
             'code' => $code
         ];
     }
+
 
 
 
@@ -184,93 +212,67 @@ class UserService
             ];
         }
 
-        $department->manager_id = $user->id;
-        $department->save();
+        $managerRole = $this->roleRepository->findByName('Manager');
 
-        return [
-            'user' => $user,
-            'message' => 'Manager assigned successfully',
-            'code' => 200
-        ];
-    }
-
-    private function appendRolesAndPermission($user)
-    {
-        $roles = $user->roles->pluck('name')->toArray();
-        unset($user['roles']);
-        $user['roles'] = $roles;
-
-        $permissions = $user->permissions->pluck('name')->toArray();
-        unset($user['permissions']);
-        $user['permissions'] = $permissions;
-
-        return $user;
-    }
-
-
-
-    public function getVisibleUsers($Auth_user): array
-    {
-        // 1. جلب أدوار المستخدم الحالي كمصفوفة نصوص لتجنب مشاكل الـ Guard
-        $authRoles = DB::table('model_has_roles')
-            ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
-            ->where('model_has_roles.model_id', $Auth_user->id)
-            ->pluck('roles.name')
-            ->toArray();
-
-        // 2. تجهيز الكويري الأساسي للمستخدمين المستهدفين (استثناء المستخدم الحالي)
-        $query = User::where('users.id', '!=', $Auth_user->id);
-
-        // 3. الفحص بالاعتماد على مصفوفة الأدوار التي جلبناها
-        if (in_array('Super Admin', $authRoles)) {
-            // السوبر أدمن يرى الجميع
-        } elseif (in_array('Campaign Manager', $authRoles)) {
-            // مدير الحملة يرى الأدوار 2 و 4 (Campaign Employee, Volunteer Manager)
-            $query->whereHas('roles', function ($q) {
-                $q->whereIn('roles.id', [2, 4]);
-            });
-        } elseif (in_array('Evaluation Manager', $authRoles)) {
-            // مدير المراقبة يرى فقط موظف المراقبة (Evaluation Officer) والذي يحمل الرقم 6
-            $query->whereHas('roles', function ($q) {
-                $q->where('roles.id', 6);
-            });
-        } else {
+        if (!$managerRole) {
             return [
-                'user'    => [],
-                'message' => 'successfully',
-                'code'    => 200
+                'user' => null,
+                'message' => 'Manager role not found',
+                'code' => 404
             ];
         }
 
-        // جلب البيانات وتمريرها للـ Resource
-        $visibleUsers = $query->get();
+        $departmentRole = $this->departmentRoleRepository
+            ->findByDepartmentAndRole($department->id, $managerRole->id);
 
-        return [
-            'user'    => UserResource::collection($visibleUsers),
-            'message' => 'successfully',
-            'code'    => 200
-        ];
+        if (!$departmentRole) {
+            return [
+                'user' => null,
+                'message' => 'Manager role does not belong to this department',
+                'code' => 404
+            ];
+        }
+
+        return DB::transaction(function () use ($department, $user, $departmentRole) {
+
+            $department->manager_id = $user->id;
+            $department->save();
+
+            $updatedUser=$this->userRepository->updateStatusUser([
+                'department_role_id' => $departmentRole->id,
+            ], $user);
+            return [
+                'user' => $updatedUser,
+                'message' => 'Manager assigned successfully',
+                'code' => 200
+            ];
+        });
     }
-
-    public function getVisibleUsersdd($Auth_user): array
+    public function getVisibleUsers($authUser): array
     {
         $data = $this->userRepository->getAll();
         $array = [];
 
         foreach ($data as $user) {
-            if ($Auth_user->id !== $user->id && $Auth_user->can('view', $user)) {
-                $array[] = $user;
+            if ($this->userAuthorizationService->canView($authUser, $user)) {
+                $array[] = [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'status' => $user->status ?? 'active',
+                    'role' => $user->departmentRole?->role
+                        ? [$user->departmentRole->role->name]
+                        : [],
+                  'department_name' => $user->departmentRole->department->name];
             }
         }
 
         return [
-            'user' => UserResource::collection($array),
-            'message' => 'successfully',
-            'code' => 200
+            'user' => $array,
+            'message' => 'employees successfully',
+            'code'=>200
         ];
-    }
-
-    public function searchUser(searchUserRequest $request): array
+    }    public function searchUser(searchUserRequest $request): array
     {
         $user = $this->userRepository->searchUser($request);
 
@@ -292,28 +294,51 @@ class UserService
         $user = $this->userRepository->getById($id);
 
         if (!$user) {
-            return ['user' => null, 'message' => 'this user not found', 'code' => 404];
+            return [
+                'user' => null,
+                'message' => 'this user not found',
+                'code' => 404
+            ];
         }
 
-        $this->authorize('update', $user);
-        $user = $this->userRepository->UpdateEmployee($request->validated(), $id);
+        if (! $this->userAuthorizationService->canUpdate(Auth::user(), $user)) {
+            return [
+                'user' => null,
+                'message' => 'Unauthorized',
+                'code' => 403
+            ];
+        }
+
+        $user = $this->userRepository->UpdateEmployee(
+            $request->validated(),
+            $id
+        );
 
         return [
-            'user' => new UserResource($user),
+            'user' => new UserDetailResource($user),
             'message' => 'success',
             'code' => 200
         ];
     }
-
     public function ShowdetailEmployee($id): array
     {
         $user = $this->userRepository->getById($id);
 
         if (!$user) {
-            return ['user' => null, 'message' => 'User not found', 'code' => 404];
+            return [
+                'user' => null,
+                'message' => 'User not found',
+                'code' => 404
+            ];
         }
 
-        $this->authorize('view', $user);
+        if (! $this->userAuthorizationService->canView(Auth::user(), $user)) {
+            return [
+                'user' => null,
+                'message' => 'Unauthorized',
+                'code' => 403
+            ];
+        }
 
         return [
             'user' => new UserDetailResource($user),
@@ -321,7 +346,6 @@ class UserService
             'code' => 200
         ];
     }
-
     public function ShowAllRoles(): array
     {
         $roles = $this->userRepository->ShowAllRoles();
@@ -457,47 +481,57 @@ class UserService
         ];
     }
 
-    public function createUser(array $data): array
+
+    public function createUser(array $data)
     {
-        return DB::transaction(function () use ($data) {
-            $user = $this->userRepository->create_User($data);
-          //  $role = $this->roleRepository->findRoleByDepartment($data['department_id']);
+        if (! $this->userAuthorizationService->canCreate(auth()->user(), $data)) {
+            return [
+                'user' => null,
+                'message' => 'You are not allowed to create a user in this department or with this role.',
+                'code' => 403,
+            ];
+        }             $departmentRole = $this->departmentRoleRepository
+            ->findByDepartmentAndRole(
+                $data['department_id'],
+                $data['role']
+            );
 
-         //   if (!$role) {
-         //       return [
-               //     'user' => null,
-              //      'message' => 'Invalid role for this department',
-            //        'code' => 422
-          //      ];
-        //    }
+        if (!$departmentRole) {
+            return [
+                'user' => null,
+                'message' => 'This role does not belong to the selected department.',
+                'code' => 404
+            ];
+        }
 
-            $user->assignRole($data['role']);
+        return DB::transaction(function () use ($data, $departmentRole) {
 
-         //   if (str_contains(strtolower($role->name), 'manager')) {
-              //  $department = $this->departmentRepository->find($data['department_id']);
+            $user = $this->userRepository->create([
+                'name'               => $data['name'],
+                'email'              => $data['email'],
+                'password'           => Hash::make($data['password']),
+                'phone'              => $data['phone'] ?? null,
+                'department_role_id' => $departmentRole->id,
+                'email_verified_at'  => now(),
+            ]);
 
-              //  if (!$department) {
-              //      return [
-               //         'user' => null,
-               //         'message' => 'Department not found',
-              //          'code' => 404
+            if ($departmentRole->role?->name === 'Manager') {
 
-               // }
+                $department = $this->departmentRepository->find($data['department_id']);
 
-             //   $department->manager_id = $user->id;
-           //     $department->save();
-          //  }
+                if ($department) {
+                    $department->update([
+                        'manager_id' => $user->id,
+                    ]);
+                }
+            }
 
             return [
-                'user' => $user,
-                'message' => 'Success',
-                'code' => 200
+                'user' => new UserResource($user),
+                'message' => 'User created successfully.',
+                'code' => 201,
             ];
-        });
-    }
-
-
-    public function searchVolunteer(searchUserRequest $request)
+        });    }       public function searchVolunteer(searchUserRequest $request)
     {
         $user = $this->userRepository->searchVolunteer($request);
 

@@ -4,7 +4,7 @@
 namespace App\Repositories;
 
 
-use App\Models\goalIndicator;
+use App\Models\GoalIndicator;
 
 class goal_IndicatorRepository
 {
@@ -16,7 +16,7 @@ class goal_IndicatorRepository
 
     public function getById($goal_id, $indicator_id)
     {
-        return goalIndicator::where('indicator_id',$indicator_id)->where('campaign_kpi_id',$goal_id)->first();
+        return GoalIndicator::where('indicator_id',$indicator_id)->where('campaign_kpi_id',$goal_id)->first();
     }
 
     public function updateTargetValue(
@@ -25,7 +25,7 @@ class goal_IndicatorRepository
         float $targetValue
     ): bool {
 
-        return goalIndicator::query()
+        return GoalIndicator::query()
 
             ->where('campaign_kpi_id', $goalId)
 
@@ -40,7 +40,7 @@ class goal_IndicatorRepository
         int $indicatorId
     ): ?GoalIndicator {
 
-        return goalIndicator::query()
+        return GoalIndicator::query()
 
             ->where('campaign_kpi_id', $goalId)
 
