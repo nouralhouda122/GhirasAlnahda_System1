@@ -119,6 +119,14 @@ class indicatorsSeeder extends Seeder
             ],
         ];
 
-        DB::table('indicators')->insert($indicators);
+        DB::table('indicators')->upsert(
+            $indicators,
+            ['id'],
+            [
+                'name', 'description', 'domain', 'type', 'data_source',
+                'calculation_type', 'table_name', 'column_name',
+                'survey_config', 'priority', 'tags', 'updated_at',
+            ]
+        );
     }
 }

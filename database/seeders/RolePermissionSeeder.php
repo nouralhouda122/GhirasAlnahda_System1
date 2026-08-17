@@ -55,15 +55,27 @@ class RolePermissionSeeder extends Seeder
 
         $adminDept = Department::firstOrCreate(['name' => 'General Administration']);
 
-        $deptRoleId = DB::table('department_roles')->insertGetId([
-            'department_id' => $adminDept->id,
-            'role_id' => $superAdminRole->id,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $deptRoleId = DB::table('department_roles')
+            ->where('department_id', $adminDept->id)
+            ->where('role_id', $superAdminRole->id)
+            ->value('id');
+
+        if (! $deptRoleId) {
+            $deptRoleId = DB::table('department_roles')->insertGetId([
+                'department_id' => $adminDept->id,
+                'role_id' => $superAdminRole->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
 
         $allPermissionIds = Permission::pluck('id')->toArray();
-        foreach ($allPermissionIds as $permissionId) {
+        $existingPermissionIds = DB::table('department_role_permissions')
+            ->where('department_role_id', $deptRoleId)
+            ->pluck('permission_id')
+            ->all();
+
+        foreach (array_diff($allPermissionIds, $existingPermissionIds) as $permissionId) {
             DB::table('department_role_permissions')->insert([
                 'department_role_id' => $deptRoleId,
                 'permission_id' => $permissionId,

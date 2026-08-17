@@ -11,11 +11,13 @@ class ManagerCampanigSedder extends Seeder
 {
     public function run(): void
     {
-        User::query()->create([
-            'name' => 'ManagerCampanigSedder',
-            'email' => 'LujenChaban1234@gmail.com',
-            'password' => Hash::make('12345678'),
-            'email_verified_at' => '2026-04-09',
-        ]);
+        User::query()->firstOrCreate(
+            ['email' => 'LujenChaban1234@gmail.com'],
+            [
+                'name' => 'ManagerCampanigSedder',
+                'password' => Hash::make('12345678'),
+                'email_verified_at' => '2026-04-09',
+            ]
+        );
     }
 }

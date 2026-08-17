@@ -9,7 +9,7 @@ class IndicatorSurveyQuestionSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::table('indicator_survey_question')->insert([
+        DB::table('indicator_survey_question')->upsert([
             // =====================================================
             // 🟢 ربط المؤشرات الرقمية بأسئلة موازية
             // =====================================================
@@ -66,6 +66,6 @@ class IndicatorSurveyQuestionSeeder extends Seeder
             ['indicator_id' => 14, 'question_id' => 10, 'phase' => 'after', 'created_at' => now(), 'updated_at' => now()],
             ['indicator_id' => 14, 'question_id' => 15, 'phase' => 'after', 'created_at' => now(), 'updated_at' => now()],
             ['indicator_id' => 14, 'question_id' => 16, 'phase' => 'after', 'created_at' => now(), 'updated_at' => now()],
-        ]);
+        ], ['indicator_id', 'question_id', 'phase'], ['updated_at']);
     }
 }

@@ -264,7 +264,7 @@ class UserService
                     'role' => $user->departmentRole?->role
                         ? [$user->departmentRole->role->name]
                         : [],
-                  'department_name' => $user->departmentRole->department->name];
+                  'department_name' => $user->departmentRole?->department?->name];
             }
         }
 

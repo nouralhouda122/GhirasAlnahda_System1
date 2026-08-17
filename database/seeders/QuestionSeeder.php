@@ -9,7 +9,7 @@ class QuestionSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::table('questions')->insert([
+        DB::table('questions')->upsert([
             // =====================================================
             // BEFORE CAMPAIGN (الأسئلة قبل الحملة)
             // =====================================================
@@ -177,6 +177,6 @@ class QuestionSeeder extends Seeder
                 'type' => 'rating', 'scale' => 5, 'order' => 11,
                 'created_at' => now(), 'updated_at' => now(),
             ],
-        ]);
+        ], ['id'], ['question_text', 'type', 'scale', 'order', 'updated_at']);
     }
 }
