@@ -12,7 +12,8 @@ class GoalIndicator extends Model
     public function indicator()
     {
         return $this->belongsTo(
-            Indicator::class
+            Indicator::class,
+            'indicator_id'
         );
     }public function goal()
 {

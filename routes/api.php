@@ -2,12 +2,15 @@
 
 use App\Http\Controllers\CampaignAIRecommendationController;
 use App\Http\Controllers\CampaignEvaluationController;
+use App\Http\Controllers\CampaignReportController;
 use App\Http\Controllers\DeviceTokenController;
 use App\Http\Controllers\ApprovalRequestController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\courseController;
+use App\Http\Controllers\GeneralDashboardController;
+use App\Http\Controllers\GeneralDashboardDetailsController;
 use App\Http\Controllers\TeamRequestController;
 use App\Http\Controllers\evaluationTaskController;
 use App\Http\Controllers\MonitoringGoalController;
@@ -157,19 +160,24 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
 
 /////////////////////////////////////
 ///
+//توصيات
+    Route::get('/campaigns/{campaign}/ai-recommendations/pre-launch', [CampaignAIRecommendationController::class, 'preLaunchRecommendations'])->name('campaigns.ai-recommendations.pre-launch');
+    Route::get('/campaigns/{campaign}/ai-recommendations/post-launch', [CampaignAIRecommendationController::class, 'postLaunchRecommendations'])->name('campaigns.ai-recommendations.post-launch');
+//احصائيات
+    Route::get('/general-dashboard/kpis', [GeneralDashboardController::class, 'kpis']);
+    Route::get('/general-dashboard/statistics', [GeneralDashboardController::class, 'statistics']);
+    Route::get('/general-dashboard/details', [GeneralDashboardDetailsController::class, 'getDetails']);
+    Route::get('/general-dashboard/overview', [GeneralDashboardController::class, 'overview']
+    );
+//تقرير
+    Route::get('/campaign-reports/{campaignId}', [CampaignReportController::class, 'show']
+    );
 
-    Route::get(
-        '/campaigns/{campaign}/ai-recommendations/pre-launch',
-        [CampaignAIRecommendationController::class, 'preLaunchRecommendations']
-    )->name('campaigns.ai-recommendations.pre-launch');
-
-    Route::get(
-        '/campaigns/{campaign}/ai-recommendations/post-launch',
-        [CampaignAIRecommendationController::class, 'postLaunchRecommendations']
-    )->name('campaigns.ai-recommendations.post-launch');
 
 
-/////////////////////////////////////////////////////////////
+
+
+    /////////////////////////////////////////////////////////////
     // --- راوتات طلبات التطوع ---
     // 1. تقديم طلب جديد (للمستخدم)
     Route::post('volunteerjoin', [VolunteerRequestController::class, 'store']);

@@ -10,7 +10,18 @@ class Campaign extends Model
 {
     use HasFactory;
     protected $guarded = [];
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
 
+        'target_amount' => 'decimal:2',
+        'current_amount' => 'decimal:2',
+
+        'latitude' => 'decimal:7',
+        'longitude' => 'decimal:7',
+
+        'has_evaluation' => 'boolean',
+    ];
     public function Campaign_kpis(){
         return $this->hasMany(Campaign_kpi::class);
     }
@@ -91,6 +102,6 @@ class Campaign extends Model
     ->withPivot('status')
     ->withTimestamps();
 }
-    
-    
+
+
     }
