@@ -113,7 +113,7 @@ class GeneralDashboardRepository
         return ApprovalRequest::query()
             ->with([
                 'approvable',
-                'requester:id,name',
+                'requestedBy:id,name',
             ])
             ->latest('created_at')
             ->limit($limit)
@@ -132,35 +132,27 @@ class GeneralDashboardRepository
                     'notes' => $request->notes,
 
                     'requested_by' => [
-                        'id' =>
-                            $request->requester?->id,
-
-                        'name' =>
-                            $request->requester?->name,
+                        'id' => $request->requestedBy?->id,
+                        'name' => $request->requestedBy?->name,
                     ],
 
                     'approvable' => [
-                        'id' =>
-                            $approvable?->id,
+                        'id' => $approvable?->id,
 
-                        'type' =>
-                            $approvable
-                                ? class_basename($approvable)
-                                : null,
+                        'type' => $approvable
+                            ? class_basename($approvable)
+                            : null,
 
-                        'title' =>
-                            $approvable?->title,
+                        'title' => $approvable?->title,
                     ],
 
-                    'created_at' =>
-                        $request->created_at
-                            ?->format('Y-m-d H:i:s'),
+                    'created_at' => $request->created_at
+                        ?->format('Y-m-d H:i:s'),
                 ];
 
             })
             ->toArray();
     }
-
     /*
     |--------------------------------------------------------------------------
     | Dashboard KPIs

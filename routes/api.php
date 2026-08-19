@@ -229,3 +229,5 @@ Route::get('evaluation-tasks-questions/{id}', [evaluationTaskController::class, 
 Route::post('evaluation-tasks-submit/{id}', [evaluationTaskController::class, 'submitAnswers']);
 Route::post('evaluation-tasks-status/{id}', [evaluationTaskController::class, 'updateStatus']);
 });
+Route::get('/general-dashboard/overview', [GeneralDashboardController::class, 'overview']
+);

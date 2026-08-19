@@ -58,14 +58,15 @@ class Complaint extends Model
         // مدراء الأقسام يستعرضون الشكاوى الموجهة لدورهم فقط
         if ($user->hasRole('Manager')) {
             $query->where('assigned_role', 'Manager');
-        } 
+        }
         elseif ($user->hasRole('Volunteer Manager')) {
             $query->where('assigned_role', 'Volunteer Manager');
-        } 
+        }
         else {
             // باقي المستخدمين يرون شكاويهم الشخصية فقط
             $query->where('user_id', $user->id);
         }
+
 
         if ($status) {
             $query->where('status', $status);
