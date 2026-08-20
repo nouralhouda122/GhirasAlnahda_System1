@@ -261,15 +261,6 @@ public function registerVolunteerToCampaign(
             ];
         }
 
-        // Check campaign status
-        if (!in_array($campaignWithLock->status, ['approved', 'ongoing'])) {
-            return [
-                'user' => null,
-                'message' => 'Registration for this campaign is currently unavailable.',
-                'code' => 400
-            ];
-        }
-
         // Check duplicate
         $alreadyJoined = DB::table('campaign_volunteer')
             ->where('volunteer_profile_id', $volunteerProfileId)

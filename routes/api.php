@@ -3,6 +3,7 @@
 use App\Http\Controllers\CampaignAIRecommendationController;
 use App\Http\Controllers\CampaignEvaluationController;
 use App\Http\Controllers\CampaignReportController;
+use App\Http\Controllers\CampaignReportExportController;
 use App\Http\Controllers\DeviceTokenController;
 use App\Http\Controllers\ApprovalRequestController;
 use App\Http\Controllers\AttendanceController;
@@ -172,7 +173,10 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
 //تقرير
     Route::get('/campaign-reports/{campaignId}', [CampaignReportController::class, 'show']
     );
-
+    Route::get(
+        '/campaigns/{campaignId}/reports/pdf',
+        [CampaignReportExportController::class, 'pdf']
+    );
 
 
 
