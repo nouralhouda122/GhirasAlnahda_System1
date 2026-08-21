@@ -20,4 +20,12 @@ class SurveyQuestion extends Model
     {
         return $this->belongsTo(Question::class, 'question_id', 'id');
     }
+    public function answers()
+    {
+        return $this->hasMany(
+            SurveyAnswer::class,
+            'survey_question_id'
+        );
+    }
+
 }

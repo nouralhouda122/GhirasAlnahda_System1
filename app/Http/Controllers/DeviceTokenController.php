@@ -24,7 +24,7 @@ class DeviceTokenController extends Controller
         // 1. التحقق من البيانات القادمة من التطبيقات
         $request->validate([
             'fcm_token'   => 'required|string',
-           // 'app_type'    => 'required|in:admin,manager,volunteer', // حماية المدخلات لتقبل الأنواع الثلاثة فقط
+         //  'app_type'    => 'required|in:admin,manager,volunteer', // حماية المدخلات لتقبل الأنواع الثلاثة فقط
             'device_type' => 'nullable|in:android,ios,web'
         ]);
 
@@ -48,16 +48,16 @@ class DeviceTokenController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Device token updated successfully for app: ' . $appType
+            'message' => 'Device token updated successfully'
         ], 200);
-   
-   
-   
-   
-   
-   
-   
-   
+
+
+
+
+
+
+
+
         }
 
 
@@ -87,5 +87,5 @@ private function resolveAppType($user): string
 }
 
 
-        
+
 }

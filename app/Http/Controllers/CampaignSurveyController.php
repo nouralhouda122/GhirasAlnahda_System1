@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
     use App\Http\Requests\addQuestionToSurveyRequest;
     use App\Http\Requests\SurveyStageRequest;
     use App\Http\Requests\updateQuestionToSurveyRequest;
+    use App\Models\Survey;
     use App\Services\CampaignSurveyService;
     use App\Helpers\ResponseHelper;
     use Illuminate\Http\JsonResponse;
@@ -17,7 +18,84 @@ class CampaignSurveyController extends Controller
     {
         $this->campaignSurveyService = $campaignSurveyService;
     }
-    /**
+    public function results($surveyId): JsonResponse
+    {
+        $survey = Survey::with([
+            'campaign',
+            'surveyQuestions.question',
+            'surveyQuestions.answers',
+        ])->find($surveyId);
+
+        if (!$survey) {
+            return response()->json([
+                'status' => 0,
+                'message' => 'Survey not found.',
+                'data' => null,
+            ], 404);
+        }
+
+        $questions = $survey->surveyQuestions
+            ->sortBy('order')
+            ->map(function ($surveyQuestion) {
+
+                $answers = $surveyQuestion->answers;
+
+                $totalResponses = $answers->count();
+
+                $answerResults = $answers
+                    ->groupBy('answer')
+                    ->map(function ($items, $answer) use ($totalResponses) {
+
+                        $count = $items->count();
+
+                        return [
+                            'answer' => $answer,
+                            'count' => $count,
+                            'percentage' => $totalResponses > 0
+                                ? round(
+                                    ($count / $totalResponses) * 100,
+                                    2
+                                )
+                                : 0,
+                        ];
+                    })
+                    ->values();
+
+                return [
+                    'survey_question_id' => $surveyQuestion->id,
+
+                    'question_id' => $surveyQuestion->question_id,
+
+                    'question' => $surveyQuestion->question?->question_text,
+
+                    'order' => $surveyQuestion->order,
+
+                    'total_responses' => $totalResponses,
+
+                    'answers' => $answerResults,
+                ];            })
+            ->values();
+
+        return response()->json([
+            'status' => 1,
+
+            'data' => [
+                'survey' => [
+                    'id' => $survey->id,
+                    'title' => $survey->title,
+                    'campaign_id' => $survey->campaign_id,
+                    'campaign_title' => $survey->campaign?->title,
+                ],
+
+                'total_responses' => $survey->surveyQuestions
+                    ->sum(function ($surveyQuestion) {
+                        return $surveyQuestion->answers->count();
+                    }),
+
+                'questions' => $questions,
+            ],
+        ]);
+    }    /**
      * عرض استبيان محدد حسب الـ ID
      */
     public function showBySurveyId($surveyId): JsonResponse

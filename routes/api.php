@@ -4,6 +4,7 @@ use App\Http\Controllers\CampaignAIRecommendationController;
 use App\Http\Controllers\CampaignEvaluationController;
 use App\Http\Controllers\CampaignReportController;
 use App\Http\Controllers\CampaignReportExportController;
+use App\Http\Controllers\CampaignSurveyController;
 use App\Http\Controllers\DeviceTokenController;
 use App\Http\Controllers\ApprovalRequestController;
 use App\Http\Controllers\AttendanceController;
@@ -154,8 +155,10 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
     Route::post('setWeight', [MonitoringGoalController::class, 'setWeight']);
     Route::post('setTargetValue', [MonitoringGoalController::class, 'setTargetValue']);
 
-
-////////////////////////////taskEvaluation
+    Route::get(
+        '/surveys/{survey}/results',
+        [CampaignSurveyController::class, 'results']
+    );////////////////////////////taskEvaluation
     Route::post('storeEvaluationTask',
         [\App\Http\Controllers\evaluationTaskController::class, 'store']);
     Route::get('indexAllEvaluationTask', [\App\Http\Controllers\evaluationTaskController::class, 'index']);
@@ -178,8 +181,10 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
         '/campaigns/{campaignId}/reports/pdf',
         [CampaignReportExportController::class, 'pdf']
     );
-
-
+    Route::get(
+        '/campaigns/{campaignId}/report/excel',
+        [CampaignReportExportController::class, 'excel']
+    )->whereNumber('campaignId');
 
 
     /////////////////////////////////////////////////////////////
