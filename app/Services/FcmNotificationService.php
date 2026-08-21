@@ -56,8 +56,10 @@ class FcmNotificationService
         $this->notificationRepository->saveToArchive($user->id, $title, $message, $type, $data);
 
         if (empty($tokens)) {
-            Log::info("User {$user->id} has no registered tokens for app: {$targetApp}. Saved to database archive only.");
-            return true;
+            // تحذير وليس info: الإشعار لم يصل فعلياً إلى الجهاز، وصل للأرشيف فقط.
+            // يظهر عادةً عندما يسجّل التطبيق التوكن تحت app_type مختلف عن المستهدف.
+            Log::warning("FCM: user {$user->id} has no tokens for app '{$targetApp}' — archived only, no push sent.");
+            return false;
         }
 
         // 3. بناء اتصال الفايربيز المخصص لهذا التطبيق

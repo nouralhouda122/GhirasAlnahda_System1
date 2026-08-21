@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Repositories\ComplaintRepository;
 use App\Models\Complaint;
+use Illuminate\Support\Facades\Log;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -49,10 +50,16 @@ class ComplaintService
         // 4. إشعار المستخدمين الذين يمتلكون الدور المسند للشكوى
         $targetUsers = User::role($data['assigned_role'])->get();
 
+        if ($targetUsers->isEmpty()) {
+            // بدون هذا التحذير تمرّ الحالة بصمت تام: لا مستخدم بالدور المستهدف
+            // يعني أن الحلقة أدناه لا تُنفَّذ ولا يصل أي إشعار.
+            Log::warning("Complaint {$complaint->id}: no users hold role '{$data['assigned_role']}' — no notifications sent.");
+        }
+
         foreach ($targetUsers as $user) {
-            $appType = in_array($data['assigned_role'], ['Super Admin', 'Manager']) 
-                ? 'admin' 
-                : 'manager';
+            // 'admin' مخصص لمشروع ghiras-dash (السوبر أدمن فقط).
+            // بقية الأدوار — بما فيها Manager — تستخدم تطبيق الإدارة finalproject-d4cd4.
+            $appType = $data['assigned_role'] === 'Super Admin' ? 'admin' : 'manager';
 
             $this->fcmNotificationService->sendNotification(
                 $user,

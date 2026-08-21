@@ -64,17 +64,21 @@ class DeviceTokenController extends Controller
 
 private function resolveAppType($user): string
 {
+    // ملاحظة: الأسماء هنا يجب أن تطابق جدول roles تماماً.
+    // الأسماء القديمة (Campaign Manager / Evaluation Manager / Evaluation Officer /
+    // Campaign Employee) غير موجودة في النظام، وكان وجودها يجعل كل مدير
+    // يسقط إلى 'volunteer' فلا تصله إشعارات لوحة الإدارة.
+    // 'admin' = مشروع ghiras-dash (تطبيق السوبر أدمن فقط)
     if ($user->hasRole('Super Admin')) {
         return 'admin';
     }
 
+    // 'manager' = مشروع finalproject-d4cd4 (تطبيق الإدارة: Manager وما دونه)
     if (
-        $user->hasRole('Campaign Manager') ||
-        $user->hasRole('Campaign Employee') ||
+        $user->hasRole('Manager') ||
         $user->hasRole('Volunteer Manager') ||
-        $user->hasRole('Evaluation Manager') ||
-        $user->hasRole('Evaluation Officer') ||
-        $user->hasRole('Team Leader')
+        $user->hasRole('Team Leader') ||
+        $user->hasRole('Employee')
     ) {
         return 'manager';
     }

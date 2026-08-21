@@ -57,7 +57,8 @@ public function __construct(
 
     $joinRequest = \App\Models\JoinRequest::create($data);
 
-        $campaignManager = \App\Models\User::role('Campaign Manager')->first();
+        // 'Campaign Manager' غير موجود في جدول roles؛ الدور الفعلي هو 'Manager'
+        $campaignManager = \App\Models\User::role('Manager')->first();
 
     if ($campaignManager) {
 
