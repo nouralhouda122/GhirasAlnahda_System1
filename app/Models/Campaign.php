@@ -102,6 +102,9 @@ class Campaign extends Model
     ->withPivot('status')
     ->withTimestamps();
 }
-
-
+    public function donations()
+{
+    return $this->hasMany(Donation::class);
+}
+    
     }

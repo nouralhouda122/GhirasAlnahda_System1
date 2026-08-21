@@ -20,6 +20,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\DonationController;
 use App\Http\Controllers\VolunteerRequestController;
 use App\Services\ApprovalRequestService;
 use App\Services\KPIBrain;
@@ -232,6 +233,12 @@ Route::get('evaluation-my-tasks',[evaluationTaskController::class, 'myTasks']);
 Route::get('evaluation-tasks-questions/{id}', [evaluationTaskController::class, 'getQuestions']);
 Route::post('evaluation-tasks-submit/{id}', [evaluationTaskController::class, 'submitAnswers']);
 Route::post('evaluation-tasks-status/{id}', [evaluationTaskController::class, 'updateStatus']);
+// مسارات Stripe  الدفع
+
+Route::post('/donations/checkout', [DonationController::class, 'createCheckoutSession']);
 });
 Route::get('/general-dashboard/overview', [GeneralDashboardController::class, 'overview']
 );
+
+Route::get('/donations/success', [DonationController::class, 'paymentSuccess']);
+Route::get('/donations/cancel', [DonationController::class, 'paymentCancel']);

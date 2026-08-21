@@ -111,4 +111,8 @@ class User extends Authenticatable
     {
         return $this->hasMany(UserFcmToken::class, 'user_id');
     }
+    public function donations()
+{
+    return $this->hasMany(Donation::class);
+}
 }
