@@ -58,7 +58,7 @@ class DonationController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data'=>$campanig,
+            
             'checkout_url' => $checkoutSession->url // الواجهة الأمامية تفتح هذا الرابط للمستخدم
         ]);
     }
