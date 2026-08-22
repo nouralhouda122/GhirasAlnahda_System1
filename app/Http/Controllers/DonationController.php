@@ -7,7 +7,6 @@ use App\Models\Campaign;
 use App\Models\Donation;
 use Stripe\Stripe;
 use Stripe\Checkout\Session;
-use Illuminate\Http\Request;
 
 class DonationController extends Controller
 {
@@ -58,7 +57,6 @@ class DonationController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data'=>$campanig,
             'checkout_url' => $checkoutSession->url // الواجهة الأمامية تفتح هذا الرابط للمستخدم
         ]);
     }

@@ -170,7 +170,7 @@ class AttendanceService
         }
 
         return [
-            'user' => ApprovalRequestResource::collection($attendances),
+            'user' => AttendanceResource::collection($attendances),
             'message' => 'success',
             'code' => 200
         ];
