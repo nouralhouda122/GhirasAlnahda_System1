@@ -1,9 +1,9 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use Illuminate\Http\Request;
 namespace App\Http\Controllers;
+use App\Models\Campaign;
 use App\Models\Donation;
 use Stripe\Stripe;
 use Stripe\Checkout\Session;
@@ -25,6 +25,12 @@ class DonationController extends Controller
             'amount' => $request->amount,
             'status' => 'pending',
         ]);
+        $campaign = Campaign::findOrFail($donation->campaign_id);
+
+        $campaign->current_amount += $donation->amount;
+
+        $campaign->save();
+
 
         Stripe::setApiKey(config('services.stripe.secret'));
 
@@ -52,6 +58,7 @@ class DonationController extends Controller
 
         return response()->json([
             'status' => 'success',
+            'data'=>$campanig,
             'checkout_url' => $checkoutSession->url // الواجهة الأمامية تفتح هذا الرابط للمستخدم
         ]);
     }
@@ -69,7 +76,43 @@ class DonationController extends Controller
             'message' => 'تم التبرع بنجاح، شكراً لمساهمتك!'
         ]);
     }
+public function campaignDonations($campaignId)
+{
+    $campaign = Campaign::findOrFail($campaignId);
 
+    $donations = $campaign->donations()
+        ->where('status', 'completed')
+        ->with('user:id,name')
+        ->latest()
+        ->get();
+
+    return response()->json([
+        'status' => 'success',
+        'campaign' => [
+            'id' => $campaign->id,
+            'title' => $campaign->title,
+            'target_amount' => $campaign->target_amount,
+            'current_amount' => $campaign->current_amount,
+            'remaining_amount' => max(
+                0,
+                $campaign->target_amount - $campaign->current_amount
+            ),
+        ],
+        'donations_count' => $donations->count(),
+        'donations' => $donations->map(function ($donation) {
+            return [
+                'id' => $donation->id,
+                'donor' => [
+                    'id' => $donation->user?->id,
+                    'name' => $donation->user?->name,
+                ],
+                'amount' => $donation->amount,
+                'currency' => $donation->currency,
+                'created_at' => $donation->created_at,
+            ];
+        }),
+    ]);
+}
     // 3. معالجة إلغاء الدفع
     public function paymentCancel(Request $request)
     {

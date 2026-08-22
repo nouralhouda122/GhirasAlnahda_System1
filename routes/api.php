@@ -247,3 +247,7 @@ Route::get('/general-dashboard/overview', [GeneralDashboardController::class, 'o
 
 Route::get('/donations/success', [DonationController::class, 'paymentSuccess']);
 Route::get('/donations/cancel', [DonationController::class, 'paymentCancel']);
+Route::get(
+    '/campaigns/{campaignId}/donations',
+    [DonationController::class, 'campaignDonations']
+);

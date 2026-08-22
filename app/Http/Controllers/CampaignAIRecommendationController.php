@@ -24,16 +24,10 @@ class CampaignAIRecommendationController extends Controller
 
         return response()->json([
             'status' => 1,
-
             'data' => [
-                'overall_score' =>
-                    $result['overall_score'],
-
-                'overall_status' =>
-                    $result['overall_status'],
-
-                'recommendations' =>
-                    $result['recommendations'],
+                'overall_score' => $result['overall_score'],
+                'overall_status' => $result['overall_status'],
+                'recommendations' => $result['recommendations'],
             ],
         ]);
     }
@@ -50,10 +44,8 @@ class CampaignAIRecommendationController extends Controller
 
         return response()->json([
             'status' => 1,
-
             'data' => [
-                'recommendations' =>
-                    $result['recommendations'],
+                'recommendations' => $result['recommendations'],
             ],
         ]);
     }
