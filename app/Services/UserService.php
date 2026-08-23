@@ -242,6 +242,12 @@ class UserService
             $updatedUser=$this->userRepository->updateStatusUser([
                 'department_role_id' => $departmentRole->id,
             ], $user);
+
+            // نظاما أدوار متوازيان: department_role_id هو ما تكتبه الواجهة،
+            // لكن hasRole()/User::role() يقرآن جداول Spatie. بدون هذه المزامنة
+            // تبقى model_has_roles فارغة فلا يُعثر على أي مستلم للإشعارات.
+            $this->syncSpatieRole($updatedUser, $departmentRole);
+
             return [
                 'user' => $updatedUser,
                 'message' => 'Manager assigned successfully',
@@ -249,6 +255,24 @@ class UserService
             ];
         });
     }
+    /**
+     * يزامن دور Spatie للمستخدم انطلاقاً من department_role_id.
+     *
+     * النظام يخزّن الدور في عمود department_role_id، بينما تعتمد استعلامات
+     * الإشعارات على User::role()/hasRole() اللذين يقرآن model_has_roles.
+     * بدون هذه المزامنة ينفصل النظامان فتفشل الإشعارات بصمت.
+     */
+    private function syncSpatieRole($user, $departmentRole): void
+    {
+        $roleName = $departmentRole->role?->name;
+
+        if (!$user || !$roleName) {
+            return;
+        }
+
+        $user->syncRoles([$roleName]);
+    }
+
     public function getVisibleUsers($authUser): array
     {
         $data = $this->userRepository->getAll();
@@ -515,6 +539,10 @@ class UserService
                 'department_role_id' => $departmentRole->id,
                 'email_verified_at'  => now(),
             ]);
+
+            // انظر الملاحظة في assignDepartmentManager: لا بد من مزامنة دور
+            // Spatie وإلا لم تصل الإشعارات لهذا المستخدم.
+            $this->syncSpatieRole($user, $departmentRole);
 
             if ($departmentRole->role?->name === 'Manager') {
 

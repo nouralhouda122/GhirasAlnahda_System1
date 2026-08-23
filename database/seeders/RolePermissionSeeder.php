@@ -81,7 +81,7 @@ class RolePermissionSeeder extends Seeder
                 'permission_id' => $permissionId,
             ]);
         }
-        User::firstOrCreate(
+        $admin = User::firstOrCreate(
             ['email' => 'admin@gmail.com'],
             [
                 'name' => 'Super Admin',
@@ -90,5 +90,10 @@ class RolePermissionSeeder extends Seeder
                 'department_role_id' => $deptRoleId,
             ]
         );
+
+        // النظام يخزّن الدور في department_role_id، لكن hasRole()/User::role()
+        // يقرآن جداول Spatie. بدون هذا الإسناد تبقى model_has_roles فارغة بعد
+        // كل db:seed فلا يُعثر على أي مستلم للإشعارات.
+        $admin->syncRoles([$superAdminRole->name]);
     }
 }

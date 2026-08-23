@@ -31,17 +31,17 @@ class evaluationTaskRequest extends FormRequest
                 'required',
                 'integer',
                 'exists:users,id',
-                function ($attribute, $value, $fail) {
-                    $hasCorrectRole = DB::table('model_has_roles')
-                        ->where('model_id', $value)
-                        ->where('model_type', 'App\Models\User') // تأكد من مطابقة الـ Namespace لموديل اليوزر عندك
-                        ->where('role_id', 6) // 6 هو معرف دور Evaluation Officer بناءً على الداتابيز لديك
-                        ->exists();
+                // function ($attribute, $value, $fail) {
+                //     $hasCorrectRole = DB::table('model_has_roles')
+                //         ->where('model_id', $value)
+                //         ->where('model_type', 'App\Models\User') // تأكد من مطابقة الـ Namespace لموديل اليوزر عندك
+                //         ->where('role_id', 6) // 6 هو معرف دور Evaluation Officer بناءً على الداتابيز لديك
+                //         ->exists();
 
-                    if (!$hasCorrectRole) {
-                        $fail('المستخدم المحدد يجب أن يكون موظف مراقبة وتقييم (Evaluation Officer) حصراً.');
-                    }
-                }
+                //     if (!$hasCorrectRole) {
+                //         $fail('المستخدم المحدد يجب أن يكون موظف مراقبة وتقييم (Evaluation Officer) حصراً.');
+                //     }
+                // }
             ],
 
             'survey_id'    => 'required|integer|exists:surveys,id',
