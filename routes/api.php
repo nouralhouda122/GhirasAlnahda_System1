@@ -155,6 +155,8 @@ Route::middleware(['auth:sanctum','check.banned'])->group(function () {
     Route::post('setWeight', [MonitoringGoalController::class, 'setWeight']);
     Route::post('setTargetValue', [MonitoringGoalController::class, 'setTargetValue']);
 
+        Route::delete('destroy/{id}', [\App\Http\Controllers\CampaignController::class, 'destroy']);
+
     Route::get(
         '/surveys/{survey}/results',
         [CampaignSurveyController::class, 'results']

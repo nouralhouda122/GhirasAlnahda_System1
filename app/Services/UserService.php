@@ -505,8 +505,6 @@ class UserService
             'code' => 200
         ];
     }
-
-
     public function createUser(array $data)
     {
         if (! $this->userAuthorizationService->canCreate(auth()->user(), $data)) {
@@ -515,12 +513,12 @@ class UserService
                 'message' => 'You are not allowed to create a user in this department or with this role.',
                 'code' => 403,
             ];
-        }             $departmentRole = $this->departmentRoleRepository
+        }
+        $departmentRole = $this->departmentRoleRepository
             ->findByDepartmentAndRole(
                 $data['department_id'],
                 $data['role']
             );
-
         if (!$departmentRole) {
             return [
                 'user' => null,

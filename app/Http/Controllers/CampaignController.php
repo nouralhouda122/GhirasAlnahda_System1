@@ -10,6 +10,8 @@ use App\Models\Campaign;
 use App\Services\CampaignService;
 use App\Services\UserService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
 class CampaignController extends Controller
 {
     protected $campaignService;
@@ -41,18 +43,45 @@ class CampaignController extends Controller
             return ResponseHelper::Error($data['data'], $data['message'], $data['code']);
         }
     }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
     }
+    public function destroy( $id)
+    {
+        try {
 
-    /**
-     * Display the specified resource.
-     */
+            $campaign = Campaign::find($id);
+
+            if (!$campaign) {
+                return ResponseHelper::Error(
+                    [],
+                    'Campaign not found.',
+                    404
+                );
+            }
+
+
+
+                // حذف الحملة
+                $campaign->delete();
+
+            return ResponseHelper::Success(
+                [
+                    'id' => $id
+                ],
+                'Campaign deleted successfully.',
+                200
+            );
+
+        } catch (\Exception $e) {
+
+            return ResponseHelper::Error(
+                [],
+                'Failed to delete campaign: ' . $e->getMessage(),
+                500
+            );
+        }}
+
     public function show()
     {
         $data=$this->campaignService->show();
@@ -108,10 +137,6 @@ class CampaignController extends Controller
         } else {
             return ResponseHelper::Error($data['data'], $data['message'], $data['code']);
         }
-    }
-
-    public function destroy(string $id)
-    {
     }
 
 

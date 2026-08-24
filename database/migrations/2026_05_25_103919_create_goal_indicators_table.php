@@ -12,16 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('goal_indicators', function (Blueprint $table) {
-
             $table->id();
             $table->decimal(
                 'target_value',
                 10,
-                2
-            )->nullable();
-
+                2)->nullable();
             $table->foreignId('campaign_kpi_id')
-
                 ->constrained('campaign_kpis')
                 ->cascadeOnDelete();
             $table->foreignId('indicator_id')
